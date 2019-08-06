@@ -24,6 +24,7 @@
 #define REG_MAC                 0x06
 #define REG_USID                0x0c
 #define REG_VERSION             0x12
+#define REG_FACTORY_TEST        0x16
 
 #define REG_BOOT_MODE           0x20
 #define REG_BOOT_EN_WOL         0x21
@@ -344,6 +345,14 @@ static int get_hw_version(void)
 	saradc_disable();
 
 	return 0;
+}
+
+static int get_factorytest_flag(void)
+{
+	int flag;
+	flag = kbi_i2c_read(REG_FACTORY_TEST);
+	setenv("factorytest", flag == 1 ? "1":"0");
+	return flag;
 }
 
 static void get_usid(int is_print)
@@ -730,6 +739,11 @@ static int do_kbi_hwver(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv
 	return get_hw_version();
 }
 
+static int do_kbi_factorytest(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	return get_factorytest_flag();
+}
+
 static int do_kbi_switchmac(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
 {
 
@@ -1012,6 +1026,7 @@ static cmd_tbl_t cmd_kbi_sub[] = {
 	U_BOOT_CMD_MKENT(portmode, 1, 1, do_kbi_portmode, "", ""),
 #endif
 	U_BOOT_CMD_MKENT(forcereset, 4, 1, do_kbi_forcereset, "", ""),
+	U_BOOT_CMD_MKENT(factorytest, 1, 1, do_kbi_factorytest, "", ""),
 };
 
 static int do_kbi(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
