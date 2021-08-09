@@ -45,6 +45,10 @@
 #include "amlogic/auge_sound.h"
 #endif
 #include <amlogic/board.h>
+#ifdef CONFIG_POWER_FUSB302
+#include <power/fusb302.h>
+#endif
+#include <asm/arch-meson/boot.h>
 
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -130,6 +134,10 @@ int board_init(void)
 	run_command("watchdog off", 0);
 	printf("watchdog disable\n");
 
+#ifdef CONFIG_POWER_FUSB302
+	fusb302_init();
+#endif
+
 	aml_set_bootsequence(0);
 	//Please keep try usb boot first in board_init, as other init before usb may cause burning failure
 #if defined(CONFIG_AML_V3_FACTORY_BURN) && defined(CONFIG_AML_V3_USB_TOOl)
@@ -195,6 +203,9 @@ phys_size_t get_ddr_memsize(void)
 	env_set_hex("board_ddr_size", ddr_size);
 	return ddr_size;
 }
+#endif
+#ifdef CONFIG_POWER_FUSB302
+#include <power/fusb302.h>
 #endif
 
 void SetCurrentDtbFile(void)
