@@ -1145,6 +1145,7 @@ static int spansion_quad_enable(struct spi_flash *flash)
 	return ret;
 }
 
+#if defined(CONFIG_SPI_FLASH_GIGADEVICE)
 #define CMD_OCTAL_READ_CONFIG	(0x85)
 #define CMD_OCTAL_WRITE_CONFIG	(0x81)
 #define CMD_OCTAL_SPI_NODQS_IO_MODE	(0xdf)
@@ -1207,6 +1208,7 @@ static int giga_octal_enable(struct spi_flash *flash)
 
 	return ret;
 }
+#endif
 #endif
 
 const struct spi_flash_info *spi_flash_read_id(struct spi_flash *flash)

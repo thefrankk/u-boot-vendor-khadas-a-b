@@ -1434,8 +1434,12 @@ int mtd_store_param_partition(void)
 	int lenvir, i, re, count;
 	char buf[512];
 	char *p = buf;
-
+#ifdef CONFIG_AML_MTDPART
 	count = get_aml_mtdpart_count();
+#else
+	pr_info("get_aml_mtdpart_count error!\n");
+	count =0;
+#endif
 	lenvir = snprintf(buf, sizeof(buf), "%s", "mtdparts=aml-nand:");
 	p += lenvir;
 	re = sizeof(buf) - lenvir;
