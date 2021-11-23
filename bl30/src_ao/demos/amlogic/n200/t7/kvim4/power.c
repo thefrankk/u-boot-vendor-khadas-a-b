@@ -73,6 +73,8 @@ void str_hw_init(void);
 void str_hw_disable(void);
 void str_power_on(int shutdown_flag);
 void str_power_off(int shutdown_flag);
+void Tp_GpioIRQRegister(void);
+void Tp_GpioIRQFree(void);
 
 void str_hw_init(void)
 {
@@ -87,6 +89,7 @@ void str_hw_init(void)
 	vGpioIRQInit();
 
 	wifi_bt_wakeup_init();
+	Tp_GpioIRQRegister();
 
 #ifdef CONFIG_HDMIRX_PLUGIN_WAKEUP
 	hdmirx_GpioIRQRegister();
@@ -103,7 +106,7 @@ void str_hw_disable(void)
 		vTaskDelete(cecTask);
 		cec_req_irq(0);
 	}
-
+	Tp_GpioIRQFree();
 	wifi_bt_wakeup_deinit();
 	vKeyPadDeinit();
 	vRestoreGpioIrqReg();

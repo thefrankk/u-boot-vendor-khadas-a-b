@@ -75,6 +75,7 @@ $(info LDFLAGS = $(LDFLAGS))
 -include $(FREERTOS_VENDOR_DRIVER)/key/build.mk
 -include $(FREERTOS_VENDOR_DRIVER)/i2c/build.mk
 -include $(FREERTOS_VENDOR_DRIVER)/eth/build.mk
+-include $(FREERTOS_VENDOR_DRIVER)/tp/build.mk
 -include $(FREERTOS_VENDOR_DRIVER)/hdmirx/t7_common/build.mk
 -include $(FREERTOS_VENDOR_DRIVER)/stick_mem/build.mk
 -include $(FREERTOS_VENDOR_DRIVER)/wifi_bt/build.mk
