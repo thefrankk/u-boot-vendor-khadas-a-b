@@ -328,6 +328,11 @@
 		"cmdline_keys="\
 			"setenv usid an400${cpu_id};"\
 			"run cmdline_keys_base;"\
+            "kbi usid noprint;"\
+				"setenv bootargs ${bootargs} androidboot.serialno=${usid};"\
+				"setenv serial ${usid}; setenv serial# ${usid};"\
+            "kbi ethmac noprint;"\
+				"setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
 			"\0"\
         "upgrade_key="\
 			"if gpio input GPIOD_4; then "\

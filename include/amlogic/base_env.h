@@ -274,19 +274,12 @@
 	"cmdline_keys_base="\
 		"setenv region_code US;"\
 		"if keyman init 0x1234; then "\
-			"if keyman read usid ${loadaddr} str; then fi;"\
 			"if keyman read region_code ${loadaddr} str; then fi;"\
-			"if keyman read mac ${loadaddr} str; then "\
-				"setenv bootargs ${bootargs} mac=${mac};"\
-				"setenv bootconfig ${bootconfig} androidboot.mac=${mac};"\
-			"fi;"\
 			"if keyman read deviceid ${loadaddr} str; then "\
 			"setenv bootconfig ${bootconfig} androidboot.deviceid=${deviceid};"\
 			"fi;"\
 		"fi;"\
 		"setenv bootconfig ${bootconfig} androidboot.wificountrycode=${region_code};"\
-		"setenv bootconfig ${bootconfig} androidboot.serialno=${usid};"\
-		"setenv serial ${usid}; setenv serial# ${usid};"\
 	    "factory_provision init;"\
 		"\0"\
 	"upgrade_key_base=" _AML_GPIO_UPGRADE_ "\0"
