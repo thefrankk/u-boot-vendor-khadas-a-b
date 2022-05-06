@@ -24,6 +24,7 @@
 /*Distinguish whether to use efuse to adjust vddee*/
 #define CONFIG_PDVFS_ENABLE
 
+#define CONFIG_PHY_REALTEK 1
 /* SMP Definitions */
 #define CPU_RELEASE_ADDR        secondary_boot_func
 
@@ -270,6 +271,7 @@
             "fi;"\
             "\0" \
 		"storeboot="\
+            "kbi resetflag 0;"\
 			"run storeboot_base;"\
 			"\0"\
 		"update="\
@@ -290,6 +292,18 @@
 		"recovery_from_flash="\
 			"run recovery_from_flash_base;"\
 			"\0"\
+        "wol_init="\
+               "kbi powerstate;"\
+               "kbi trigger wol r;"\
+               "if test ${wol_enable} = 1; then "\
+               "kbi trigger wol w 1;"\
+               "fi;"\
+               "if test ${power_state} = 1; then "\
+                   "kbi poweroff;"\
+               "else "\
+                   "kbi wolreset;"\
+               "fi;"\
+            "\0"\
 		"bcb_cmd="\
 			"run bcb_cmd_base;"\
 			"\0"\
@@ -327,12 +341,13 @@
 			"\0"\
 		"cmdline_keys="\
 			"setenv usid an400${cpu_id};"\
-			"run cmdline_keys_base;"\
             "kbi usid noprint;"\
 				"setenv bootargs ${bootargs} androidboot.serialno=${usid};"\
 				"setenv serial ${usid}; setenv serial# ${usid};"\
             "kbi ethmac noprint;"\
 				"setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
+			"setenv bootargs ${bootargs} wol_enable=${wol_enable};"\
+			"run cmdline_keys_base;"\
 			"\0"\
         "upgrade_key="\
 			"if gpio input GPIOD_4; then "\
@@ -357,6 +372,7 @@
 #define CONFIG_PREBOOT  \
             "run upgrade_check;"\
             "run check_display;"\
+            "run wol_init;"\
             "run storeargs;"\
             "run upgrade_key;" \
             "run reset_suspend;"
