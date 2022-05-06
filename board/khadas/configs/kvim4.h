@@ -13,6 +13,8 @@
  * platform power init config
  */
 
+/* config for khadas kbi */
+#define CONFIG_KHADAS_KBI 1
 #define AML_VCCK_A_INIT_VOLTAGE      1009       // VCCK A power up voltage
 #define AML_VCCK_B_INIT_VOLTAGE      1009       // VCCK B power up voltage
 #define AML_VDDEE_INIT_VOLTAGE       830       // VDDEE power up voltage
