@@ -339,6 +339,11 @@
 				"run recovery_from_flash;"\
 				"fi;fi;"\
 			"fi;"\
+            "\0"\
+        "updateu="\
+            "if tftp 1080000 u-boot.bin.signed; then "\
+                "store boot_write bootloader 1080000 $filesize;"\
+            "fi;"\
 			"\0"
 
 
