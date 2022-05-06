@@ -347,8 +347,6 @@
             "run check_display;"\
             "run storeargs;"\
             "run upgrade_key;" \
-            "bcb uboot-command;" \
-            "run switch_bootmode;" \
             "run reset_suspend;"
 
 #ifndef CONFIG_HDMITX_ONLY
