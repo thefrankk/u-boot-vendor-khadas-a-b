@@ -179,7 +179,7 @@
             "if test ${system_mode} = 1; then "\
                     "setenv bootargs ${bootargs} ro rootwait skip_initramfs;"\
             "else "\
-                    "setenv bootargs ${bootargs} ${fs_type};"\
+                    "setenv bootargs ${bootargs} ${fs_type} androidboot.force_normal_boot=1;"\
             "fi;"\
             "get_avb_mode;"\
             "echo active_slot: ${active_slot};"\
