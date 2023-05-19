@@ -1084,6 +1084,24 @@ static int do_kbi_led(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[]
 	return ret;
 }
 
+static int do_check_camera(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
+{
+	int khadas_camera_id = 0;//NULL
+
+	run_command("i2c dev 2", 0);//set i2c bus 2
+	khadas_camera_id = run_command("i2c md 0x0C 1", 0);//DW971
+	printf("khadas camera id=0x%x\n",khadas_camera_id);
+	if(khadas_camera_id == 0){
+		khadas_camera_id = 2;
+		setenv("khadas_camera_id", "2");//IMX415
+	} else {
+		khadas_camera_id = 1;
+		setenv("khadas_camera_id", "1");//OS08A10
+	}
+	printf("khadas_camera_id=%s   id=1---is OS08A10   id=2---is IMX415\n", getenv("khadas_camera_id"));
+	return 0;
+}
+
 static int get_ircode(char reg)
 {
 	int ircode[4] = {0};
@@ -1357,6 +1375,7 @@ static cmd_tbl_t cmd_kbi_sub[] = {
 	U_BOOT_CMD_MKENT(wolreset, 1, 1, do_kbi_wolreset, "", ""),
 	U_BOOT_CMD_MKENT(forcereset, 4, 1, do_kbi_forcereset, "", ""),
 	U_BOOT_CMD_MKENT(factorytest, 1, 1, do_kbi_factorytest, "", ""),
+	U_BOOT_CMD_MKENT(check_camera, 1, 1, do_check_camera, "", ""),
 };
 
 static int do_kbi(cmd_tbl_t * cmdtp, int flag, int argc, char * const argv[])
@@ -1412,6 +1431,7 @@ static char kbi_help_text[] =
 		"kbi adc - read adc value\n"
 #endif
 		"kbi powerstate - read power on state\n"
+		"kbi check_camera - t7c check OS08A10 or IMX415\n"
 		"kbi poweroff - power off device\n"
 		"kbi ethmac - read ethernet mac address\n"
 		"kbi hwver - read board hardware version\n"

@@ -587,6 +587,7 @@ const struct mtd_partition *get_partition_table(int *partitions)
 }
 #endif /* CONFIG_SPI_NAND */
 
+int t7c_check_camera = 0;//NULL
 int checkhw(char * name)
 {
 #ifdef CONFIG_MULTI_DTB
@@ -638,7 +639,11 @@ int checkhw(char * name)
 #else
 	env_set("aml_dt", "t7c_a311d2_an400\0");
 #endif
-
+	if (strcmp(env_get("aml_dt"),"t7c_a311d2_vim4n") == 0) {
+		t7c_check_camera = 2;
+		env_set("t7c_check_camera", "2");//t7c check MIPI camera
+		run_command("kbi check_camera", 0);
+	}
 	return 0;
 }
 

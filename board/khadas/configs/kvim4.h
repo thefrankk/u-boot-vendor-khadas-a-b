@@ -120,6 +120,7 @@
         "loadaddr_kernel=0x01080000\0"\
 		"dv_fw_addr=0xa00000\0"\
         "otg_device=1\0" \
+        "t7c_check_camera=0\0" \
         "lcd_ctrl=0x00000000\0" \
         "lcd_debug=0x00000000\0" \
 	"dptx0_ctrl=0x00000000\0" \
@@ -304,6 +305,21 @@
                    "kbi wolreset;"\
                "fi;"\
             "\0"\
+        "check_camera="\
+				"fdt addr ${dtb_mem_addr}; "\
+                "if test ${t7c_check_camera} = 2; then "\
+                    "echo t7c check MIPI camera;"\
+				    "if test ${khadas_camera_id} = 1; then "\
+					    "echo t7c is OS08A10 camera;"\
+				    "else if test ${khadas_camera_id} = 2; then "\
+					    "echo t7c check IMX415 camera;"\
+					    "fdt set /soc/apb4@fe000000/i2c@6a000/sensor2@36 status disable;"\
+                        "fdt set /soc/apb4@fe000000/i2c@6a000/sensor1@1a status okay;"\
+					    "fdt set /csiphy0@0xfe3bec00/ports/port@0/endpoint status disable;"\
+                        "fdt set /csiphy0@0xfe3bec00/ports/port@1/endpoint status okay;"\
+				    "fi;fi;"\
+                "fi;"\
+			"\0"\
 		"bcb_cmd="\
 			"run bcb_cmd_base;"\
 			"\0"\
@@ -346,6 +362,8 @@
 				"setenv serial ${usid}; setenv serial# ${usid};"\
             "kbi ethmac noprint;"\
 				"setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
+            "setenv bootargs ${bootargs} t7c_check_camera=${t7c_check_camera};"\
+            "setenv bootargs ${bootargs} khadas_camera_id=${khadas_camera_id};"\
 			"setenv bootargs ${bootargs} wol_enable=${wol_enable};"\
 			"run cmdline_keys_base;"\
 			"\0"\
@@ -370,6 +388,7 @@
 
 
 #define CONFIG_PREBOOT  \
+            "run check_camera;"\
             "run upgrade_check;"\
             "run check_display;"\
             "run wol_init;"\
