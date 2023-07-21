@@ -621,7 +621,8 @@ bool is_hdr_preference(struct hdmitx_dev *hdev)
 
 	if ((hdr_priority == DOLBY_VISION_PRIORITY ||
 		hdr_priority == HDR10_PRIORITY) &&
-		is_tv_support_hdr(hdev))
+		is_tv_support_hdr(hdev) &&
+		is_hdr_resolution_priority())
 		return true;
 	else
 		return false;
