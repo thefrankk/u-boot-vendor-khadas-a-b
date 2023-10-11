@@ -82,10 +82,10 @@
 #define HW_VERSION_ADC_VAL_VIM3_V11      0x200
 #define HW_VERSION_ADC_VAL_VIM3_V12      0x288
 #define HW_VERSION_UNKNOW                0x00
-#define HW_VERSION_VIM2_V12              0x01
-#define HW_VERSION_VIM2_V14              0x02
-#define HW_VERSION_VIM3_V11              0x30
-#define HW_VERSION_VIM3_V12              0x31
+#define HW_VERSION_VIM2_V12              0x22
+#define HW_VERSION_VIM2_V14              0x24
+#define HW_VERSION_VIM3_V11              0x31
+#define HW_VERSION_VIM3_V12              0x32
 
 
 static char* LED_MODE_STR[] = { "off", "on", "breathe", "heartbeat"};
@@ -338,7 +338,7 @@ static int get_hw_version(void)
 			hw_ver = HW_VERSION_UNKNOW;
 		}
 	}
-	printf("saradc: 0x%x, hw_ver: 0x%x\n", val, hw_ver);
+	printf("saradc: 0x%x, hw_ver: 0x%x (%s)\n", val, hw_ver, hw_version_str(hw_ver));
 
 	setenv("hwver", hw_version_str(hw_ver));
 
