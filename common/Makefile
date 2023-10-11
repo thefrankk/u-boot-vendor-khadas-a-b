@@ -373,4 +373,7 @@ obj-$(CONFIG_AML_FACTORY_PROVISION) += cmd_factory_provision.o
 # zircon commands
 obj-$(CONFIG_ZIRCON_BOOT_IMAGE) += cmd_zircon_bootconfig.o
 
+# khadas commands
+obj-$(CONFIG_KHADAS_KBI) += cmd_kbi.o
+
 CFLAGS_env_embedded.o := -Wa,--no-warn -DENV_CRC=$(shell tools/envcrc 2>/dev/null)
