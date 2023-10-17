@@ -780,7 +780,7 @@ int checkhw(char * name)
 			break;
 		case 0xB:
 			/* revB */
-			strcpy(loc_name, "g12b_w400_b\0");
+			strcpy(loc_name, "g12b_kvim3\0");
 			break;
 		default:
 			strcpy(loc_name, "g12b_w400_unsupport\0");
@@ -798,6 +798,7 @@ const char * const _env_args_reserve_[] =
 		"firstboot",
 		"lock",
 		"upgrade_step",
+		"bootloader_version",
 
 		NULL//Keep NULL be last to tell END
 };

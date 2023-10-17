@@ -15,7 +15,6 @@
 #./check_compile.sh all        -check amlogic/khadas/customer boards
 
 
-folder_board="board/amlogic"
 folder_khadas="board/khadas"
 customer_folder="customer/board"
 
