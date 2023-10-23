@@ -67,11 +67,11 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.dram_rank_config		= CONFIG_DDR0_32BIT_RANK01_CH01,
 	.ddr_rfc_type			= DDR_RFC_TYPE_LPDDR4_8Gbx1,
 	.DramType				= CONFIG_DDR_TYPE_LPDDR4,
-	.DRAMFreq				= {1200, 0, 0, 0},
+	.DRAMFreq				= {1608, 0, 0, 0},
 	.ddr_base_addr			= CFG_DDR_BASE_ADDR,
 	.ddr_start_offset		= CFG_DDR_START_OFFSET,
 	//.imem_load_addr			= 0xFFFC0000, //sram
-	.dmem_load_size			= 0x1000, //4K
+	//.dmem_load_size			= 0x1000, //4K
 
 	.DisabledDbyte			= 0xf0,
 	.Is2Ttiming				= 0,
@@ -130,6 +130,7 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.pll_ssc_mode			= (1<<20) | (1<<8) | (2<<4) | 0,//center_ssc_1000ppm
 	.ddr_func				= DDR_FUNC,
 	.magic					= DRAM_CFG_MAGIC,
+	.fast_boot[0]           = 1,
 	.bitTimeControl_2d      = 1,
 	.fast_boot[0]			= 0,
 	.enable_lpddr4x_mode	= 1,
@@ -141,11 +142,11 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.dram_rank_config		= CONFIG_DDR0_32BIT_RANK0_CH01,
 	.ddr_rfc_type			= DDR_RFC_TYPE_LPDDR4_8Gbx1,
 	.DramType				= CONFIG_DDR_TYPE_LPDDR4,
-	.DRAMFreq				= {1200, 0, 0, 0},
+	.DRAMFreq				= {1608, 0, 0, 0},
 	.ddr_base_addr			= CFG_DDR_BASE_ADDR,
 	.ddr_start_offset		= CFG_DDR_START_OFFSET,
 	//.imem_load_addr			= 0xFFFC0000, //sram
-	.dmem_load_size			= 0x1000, //4K
+	//.dmem_load_size			= 0x1000, //4K
 
 	.DisabledDbyte			= 0xf0,
 	.Is2Ttiming				= 0,
@@ -204,6 +205,7 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.pll_ssc_mode			= (1<<20) | (1<<8) | (2<<4) | 0,//center_ssc_1000ppm
 	.ddr_func				= DDR_FUNC,
 	.magic					= DRAM_CFG_MAGIC,
+	.fast_boot[0]                   = 1,
 	.bitTimeControl_2d      = 1,
 	.fast_boot[0]			= 0,
 	.enable_lpddr4x_mode	= 1,
@@ -215,11 +217,11 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.dram_rank_config		= CONFIG_DDR0_32BIT_RANK0_CH01,
 	.ddr_rfc_type			= DDR_RFC_TYPE_LPDDR4_8Gbx1,
 	.DramType				= CONFIG_DDR_TYPE_LPDDR4,
-	.DRAMFreq				= {1200, 0, 0, 0},
+	.DRAMFreq				= {1608, 0, 0, 0},
 	.ddr_base_addr			= CFG_DDR_BASE_ADDR,
 	.ddr_start_offset		= CFG_DDR_START_OFFSET,
 	//.imem_load_addr			= 0xFFFC0000, //sram
-	.dmem_load_size			= 0x1000, //4K
+	//.dmem_load_size			= 0x1000, //4K
 
 	.DisabledDbyte			= 0xf0,
 	.Is2Ttiming				= 0,
@@ -279,6 +281,7 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.pll_ssc_mode			= (1<<20) | (1<<8) | (2<<4) | 0,//center_ssc_1000ppm
 	.ddr_func				= DDR_FUNC,
 	.magic					= DRAM_CFG_MAGIC,
+	.fast_boot[0]                   = 1,
 	.diagnose				= CONFIG_DIAGNOSE_DISABLE,
 	.bitTimeControl_2d      = 1,
 	.fast_boot[0]           = 1,
@@ -291,11 +294,11 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.dram_rank_config		= CONFIG_DDR0_32BIT_RANK01_CH01,
 	.ddr_rfc_type			= DDR_RFC_TYPE_LPDDR4_8Gbx1,
 	.DramType				= CONFIG_DDR_TYPE_LPDDR4,
-	.DRAMFreq				= {1200, 0, 0, 0},
+	.DRAMFreq				= {1608, 0, 0, 0},
 	.ddr_base_addr			= CFG_DDR_BASE_ADDR,
 	.ddr_start_offset		= CFG_DDR_START_OFFSET,
 	//.imem_load_addr			= 0xFFFC0000, //sram
-	.dmem_load_size			= 0x1000, //4K
+	//.dmem_load_size			= 0x1000, //4K
 
 	.DisabledDbyte			= 0xf0,
 	.Is2Ttiming				= 0,
@@ -355,6 +358,7 @@ ddr_set_t __ddr_setting[] __attribute__ ((section(".ddr_settings"))) = {
 	.pll_ssc_mode			= (1<<20) | (1<<8) | (2<<4) | 0,//center_ssc_1000ppm
 	.ddr_func				= DDR_FUNC,
 	.magic					= DRAM_CFG_MAGIC,
+	.fast_boot[0]                   = 1,
 	.diagnose				= CONFIG_DIAGNOSE_DISABLE,
 },
 };
@@ -460,7 +464,7 @@ ddr_reg_t __ddr_reg[] = {
 	#define VDDEE_VAL_REG0	0x00090013
 	#define VDDEE_VAL_REG1	0x00010011
 #elif (VDDEE_VAL == 880)
-	#define VDDEE_VAL_REG0	0x00080014
+	#define VDDEE_VAL_REG0	0x00080012
 	#define VDDEE_VAL_REG1	0x00000012
 #else
 	#error "VDDEE val out of range\n"
