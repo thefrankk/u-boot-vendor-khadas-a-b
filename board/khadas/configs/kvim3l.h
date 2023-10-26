@@ -189,6 +189,7 @@
             "\0" \
         "storeboot="\
             "kbi resetflag 0;"\
+            "cfgload;"\
             "if test ${reboot_mode} = normal; then "\
             "else if test ${reboot_mode} = cold_boot; then "\
             "else "\
