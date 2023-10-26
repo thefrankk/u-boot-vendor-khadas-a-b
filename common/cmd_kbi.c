@@ -79,7 +79,7 @@
 #define HW_VERSION_ADC_VAL_VIM2_V12      0x1ce
 #define HW_VERSION_ADC_VAL_VIM2_V14      0x24a
 #define HW_VERSION_ADC_VAL_VIM3_V11      0x200
-#define HW_VERSION_ADC_VAL_VIM3_V12      0x175
+#define HW_VERSION_ADC_VAL_VIM3_V12      0x288
 #define HW_VERSION_UNKNOW                0x00
 #define HW_VERSION_VIM2_V12              0x01
 #define HW_VERSION_VIM2_V14              0x02
