@@ -52,6 +52,9 @@
 #define CONFIG_CMD_PART 1
 #define CONFIG_CMD_UNZIP    1
 #define CONFIG_LZMA         1
+
+#define CONFIG_PHY_REALTEK 1
+
 /* configs for CEC */
 #define CONFIG_CEC_OSD_NAME		"AML_TV"
 #define CONFIG_CEC_WAKEUP
@@ -185,6 +188,7 @@
             "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
+            "kbi resetflag 0;"\
             "if test ${reboot_mode} = normal; then "\
             "else if test ${reboot_mode} = cold_boot; then "\
             "else "\
@@ -308,6 +312,9 @@
         "wol_init="\
              "kbi powerstate;"\
              "kbi trigger wol r;"\
+             "if test ${wol_enable} = 1; then "\
+             "kbi trigger wol w 1;"\
+             "fi;"\
              "setenv bootargs ${bootargs} wol_enable=${wol_enable};"\
              "if test ${power_state} = 1; then "\
              "kbi trigger wol w 1;"\
