@@ -255,7 +255,7 @@ struct vbyone_config_s {
 #define DSI_CMD_SIZE_INDEX       1  /* byte[1] */
 #define DSI_GPIO_INDEX           2  /* byte[2] */
 
-#define DSI_INIT_ON_MAX          100
+#define DSI_INIT_ON_MAX          5000
 #define DSI_INIT_OFF_MAX         30
 
 struct dsi_config_s {
@@ -337,9 +337,10 @@ enum lcd_power_type_e {
 	LCD_POWER_TYPE_PMU,                 /* 1 */
 	LCD_POWER_TYPE_SIGNAL,              /* 2 */
 	LCD_POWER_TYPE_EXTERN,              /* 3 */
-	LCD_POWER_TYPE_WAIT_GPIO,           /* 4 */
-	LCD_POWER_TYPE_CLK_SS,              /* 5 */
-	LCD_POWER_TYPE_TCON_SPI_DATA_LOAD,  /* 6 */
+	LCD_POWER_TYPE_EXPANDER_IO,         /* 4 */
+	LCD_POWER_TYPE_WAIT_GPIO,           /* 5 */
+	LCD_POWER_TYPE_CLK_SS,              /* 6 */
+	LCD_POWER_TYPE_TCON_SPI_DATA_LOAD,  /* 7 */
 	LCD_POWER_TYPE_MAX,
 };
 
@@ -355,6 +356,7 @@ enum lcd_pmu_gpio_e {
 #define LCD_CLK_SS_BIT_FREQ             0
 #define LCD_CLK_SS_BIT_MODE             4
 
+#define LCD_EXPANDER_GPIO_MAX		0xff
 #define LCD_GPIO_MAX                    0xff
 #define LCD_GPIO_OUTPUT_LOW             0
 #define LCD_GPIO_OUTPUT_HIGH            1
@@ -364,6 +366,8 @@ enum lcd_pmu_gpio_e {
 #define LCD_CPU_GPIO_NUM_MAX         10
 #define LCD_CPU_GPIO_NAME_MAX        10
 #define LCD_PMU_GPIO_NUM_MAX         3
+#define LCD_EXPANDER_GPIO_NUM_MAX    8
+#define LCD_EXPANDER_GPIO_NAME_MAX   15
 
 #define LCD_PWR_STEP_MAX             15
 struct lcd_power_step_s {
@@ -375,6 +379,7 @@ struct lcd_power_step_s {
 
 struct lcd_power_ctrl_s {
 	char cpu_gpio[LCD_CPU_GPIO_NUM_MAX][LCD_CPU_GPIO_NAME_MAX];
+	char expander_gpio[LCD_EXPANDER_GPIO_NUM_MAX][LCD_EXPANDER_GPIO_NAME_MAX];
 	int *pmu_gpio;
 	struct lcd_power_step_s power_on_step[LCD_PWR_STEP_MAX];
 	struct lcd_power_step_s power_off_step[LCD_PWR_STEP_MAX];
@@ -433,6 +438,7 @@ enum bl_pwm_port_e {
 	BL_PWM_D,
 	BL_PWM_E,
 	BL_PWM_F,
+	BL_PWM_AO_C,
 	BL_PWM_VS,
 	BL_PWM_MAX,
 };
