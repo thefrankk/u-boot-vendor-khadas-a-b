@@ -55,6 +55,8 @@
 
 #define CONFIG_CMD_BOOTCTOL_AVB
 
+#define CONFIG_AML_FACTORY_PROVISION 1
+
 /* Serial config */
 #define CONFIG_CONS_INDEX 2
 #define CONFIG_BAUDRATE  115200
@@ -86,7 +88,7 @@
         "panel_type=lcd_1\0" \
         "outputmode=1080p60hz\0" \
         "hdmimode=1080p60hz\0" \
-	"colorattribute=444,8bit\0"\
+        "colorattribute=444,8bit\0"\
         "cvbsmode=576cvbs\0" \
         "display_width=1920\0" \
         "display_height=1080\0" \
@@ -133,7 +135,7 @@
             "\0"\
         "storeargs="\
             "setenv bootargs ${initargs} ${fs_type} otg_device=${otg_device} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} vout=${outputmode},enable panel_type=${panel_type} hdmitx=${cecconfig},${colorattribute} hdmimode=${hdmimode} frac_rate_policy=${frac_rate_policy} hdmi_read_edid=${hdmi_read_edid} cvbsmode=${cvbsmode} osd_reverse=${osd_reverse} video_reverse=${video_reverse} irq_check_en=${Irq_check_en}  androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag}; "\
-	"setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
+            "setenv bootargs ${bootargs} androidboot.hardware=amlogic;"\
             "run cmdline_keys;"\
             "\0"\
         "switch_bootmode="\
@@ -165,12 +167,18 @@
             "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
-            "boot_cooling;"\
+            "if test ${reboot_mode} = normal; then "\
+            "else if test ${reboot_mode} = cold_boot; then "\
+            "else "\
+                "boot_cooling;"\
+            "fi;fi;"\
             "get_system_as_root_mode;"\
             "echo system_mode: ${system_mode};"\
             "if test ${system_mode} = 1; then "\
-                    "setenv fs_type ""ro rootwait skip_initramfs"";"\
+                    "setenv bootargs ${bootargs} ro rootwait skip_initramfs;"\
                     "run storeargs;"\
+            "else "\
+                    "setenv bootargs ${bootargs} ${fs_type} androidboot.force_normal_boot=1;"\
             "fi;"\
             "get_valid_slot;"\
             "get_avb_mode;"\
@@ -282,6 +290,7 @@
                     "setenv bootargs ${bootargs} androidboot.deviceid=${deviceid};"\
                 "fi;"\
             "fi;"\
+        "factory_provision init;"\
             "\0"\
         "bcb_cmd="\
             "get_avb_mode;"\
@@ -289,7 +298,7 @@
             "\0"\
         "upgrade_key="\
             "if gpio input GPIOAO_7; then "\
-                "echo detect upgrade key; run update;"\
+			"echo detect upgrade key; run update;"\
             "fi;"\
             "\0"\
 	"irremote_update="\

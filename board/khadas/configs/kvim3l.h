@@ -166,13 +166,17 @@
             "fi;fi;fi;fi;fi;fi;"\
             "\0" \
         "storeboot="\
-            "boot_cooling;"\
+            "if test ${reboot_mode} = normal; then "\
+            "else if test ${reboot_mode} = cold_boot; then "\
+            "else "\
+                "boot_cooling;"\
+            "fi;fi;"\
             "get_system_as_root_mode;"\
             "echo system_mode: ${system_mode};"\
             "if test ${system_mode} = 1; then "\
                     "setenv bootargs ${bootargs} ro rootwait skip_initramfs;"\
             "else "\
-                    "setenv bootargs ${bootargs} ${fs_type};"\
+                    "setenv bootargs ${bootargs} ${fs_type} androidboot.force_normal_boot=1;"\
             "fi;"\
             "get_valid_slot;"\
             "get_avb_mode;"\
