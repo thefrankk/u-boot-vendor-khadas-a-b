@@ -110,8 +110,9 @@
         "jtag=disable\0"\
         "port_mode=0\0"\
         "loadaddr=3080000\0"\
-        "panel_type=lcd_1\0" \
-        "outputmode=1080p60hz\0" \
+        "lcd_ctrl=0x00000000\0"\
+        "ts050_output=panel\0" \
+        "ts101_output=panel\0" \
         "hdmimode=1080p60hz\0" \
         "nativeui=disable\0" \
         "colorattribute=444,8bit\0"\
@@ -251,7 +252,7 @@
                 "fi;"\
                 "run recovery_from_flash;"\
             "fi; \0" \
-         "update="\
+        "update="\
             /*first usb burning, second sdc_burn, third ext-sd autoscr/recovery, last udisk autoscr/recovery*/\
             "kbi lcd_reset; "\
             "run usb_burning; "\
@@ -343,6 +344,28 @@
                 "fdt set /iq sensor_name imx415;"\
             "fi;"\
         "\0"\
+        "check_panel="\
+                "fdt addr ${dtb_mem_addr}; "\
+                "if test ${khadas_mipi_id} = 1; then "\
+                    "echo check old TS050 panel;"\
+                    "outputmode=$ts050_output;"\
+                    "setenv outputmode ${ts050_output};"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/gt9xx@5d status disable;"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/ft5336@38 status okay;"\
+                "else if test ${khadas_mipi_id} = 2; then "\
+                    "echo check TS101 panel;"\
+                    "outputmode=$ts101_output;"\
+                    "setenv outputmode ${ts101_output};"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/gt9xx@5d status okay;"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/ft5336@38 status disable;"\
+                "else if test ${khadas_mipi_id} = 3; then "\
+                    "echo check new TS050 panel;"\
+                    "outputmode=$ts050_output;"\
+                    "setenv outputmode ${ts050_output};"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/gt9xx@5d status disable;"\
+                    "fdt set /soc/cbus@ffd00000/i2c@1c000/ft5336@38 status okay;"\
+                "fi;fi;fi;"\
+            "\0"\
         "spi_check="\
             "kbi factorytest;"\
              "if test ${factorytest} = 1; then "\
@@ -391,6 +414,7 @@
             "setenv serial ${usid};"\
             "kbi ethmac noprint;"\
             "setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
+            "setenv bootargs ${bootargs} khadas_mipi_id=${khadas_mipi_id};"\
             "setenv bootargs ${bootargs} khadas_camera_id=${khadas_camera_id};"\
         "factory_provision init;"\
             "\0"\
@@ -398,13 +422,6 @@
             "get_avb_mode;"\
             "get_valid_slot;"\
             "\0"\
-        "if test ${vendor_boot_mode} = true; then "\
-            "setenv dtb_mem_addr 0x1000000;"\
-            "fi;"\
-            "if test ${active_slot} != normal; then "\
-                "echo ab mode, read dtb from kernel;"\
-                "setenv common_dtb_load ""imgread dtb ${boot_part} ${dtb_mem_addr}"";"\
-            "fi;"\
         "burn_mac="\
             "kbi init;"\
             "\0"\
@@ -419,20 +436,21 @@
                 "run recovery_from_flash;"\
             "fi;"\
             "\0"\
-	"irremote_update="\
-		"if irkey 2500000 0xe31cfb04 0xb748fb04; then "\
-			"echo read irkey ok!; " \
-		"if itest ${irkey_value} == 0xe31cfb04; then " \
-			"run update;" \
-		"else if itest ${irkey_value} == 0xb748fb04; then " \
-			"run update;\n" \
-			"fi;fi;" \
-		"fi;\0" \
+        "irremote_update="\
+        "if irkey 2500000 0xe31cfb04 0xb748fb04; then "\
+            "echo read irkey ok!; " \
+        "if itest ${irkey_value} == 0xe31cfb04; then " \
+            "run update;" \
+        "else if itest ${irkey_value} == 0xb748fb04; then " \
+            "run update;\n" \
+            "fi;fi;" \
+        "fi;\0" \
 
 
 #define CONFIG_PREBOOT  \
             "run bcb_cmd; "\
             "run burn_mac;"\
+            "run check_panel;"\
             "run check_camera;"\
             "run factory_reset_poweroff_protect;"\
             "run upgrade_check;"\
@@ -462,27 +480,49 @@
 
 #define CONFIG_DUAL_LOGO \
 	"setenv outputmode 1080p60hz;setenv display_layer osd0;"\
-	"setenv fb_height 1080; setenv fb_width 1920;"\
-	"vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
-	"setenv outputmode2 panel;setenv display_layer viu2_osd0;"\
-	"vout2 prepare panel;osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout2 output panel;"\
-	"\0"\
+	"if test ${khadas_mipi_id} = 2; then "\
+        "setenv fb_width 1920; setenv fb_height 1200;"\
+        "setenv display_width 1920;setenv display_height 1200;"\
+        "vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+        "setenv outputmode2 panel;setenv display_layer viu2_osd0;"\
+        "vout2 prepare panel;osd open;osd clear;vout2 output panel;"\
+    "else "\
+        "setenv fb_height 1080; setenv fb_width 1920;"\
+        "vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+        "setenv outputmode2 panel;setenv display_layer viu2_osd0;"\
+        "vout2 prepare panel;osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout2 output panel;"\
+    "fi;"\
+    "\0"\
 
 /* for portrait panel, recovery always displays on panel */
 #define CONFIG_RECOVERY_DUAL_LOGO \
 	"setenv outputmode panel;setenv display_layer osd0;"\
-	"setenv fb_height 1920; setenv fb_width 1080;"\
-	"vout output $outputmode;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;"\
-	"setenv outputmode2 1080p60hz;setenv display_layer viu2_osd0;"\
-	"vout2 prepare $outputmode2;vout2 output $outputmode2;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
-	"\0"\
+	"if test ${khadas_mipi_id} = 2; then "\
+        "setenv fb_width 1920; setenv fb_height 1200;"\
+        "setenv display_width 1920;setenv display_height 1200;"\
+        "vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+        "setenv outputmode2 1080p60hz;setenv display_layer viu2_osd0;"\
+        "vout2 prepare $outputmode2;vout2 output $outputmode2;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+    "else "\
+        "setenv fb_height 1920; setenv fb_width 1080;"\
+        "vout output $outputmode;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;"\
+        "setenv outputmode2 1080p60hz;setenv display_layer viu2_osd0;"\
+        "vout2 prepare $outputmode2;vout2 output $outputmode2;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+    "fi;"\
+    "\0"\
 
 /* buffer rotate for portrait screen */
 #define CONFIG_SINGLE_LOGO \
-	"setenv outputmode panel;setenv display_layer osd0;"\
-	"setenv fb_height 1920; setenv fb_width 1080;"\
-	"vout output panel;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;"\
-	"\0"\
+    "setenv outputmode panel;setenv display_layer osd0;"\
+    "if test ${khadas_mipi_id} = 2; then "\
+        "setenv fb_width 1920; setenv fb_height 1200;"\
+        "setenv display_width 1920;setenv display_height 1200;"\
+        "vout output panel;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+    "else "\
+        "setenv fb_height 1920; setenv fb_width 1080;"\
+        "vout output panel;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;"\
+    "fi;"\
+    "\0"\
 
 //#define CONFIG_ENV_IS_NOWHERE  1
 #define CONFIG_ENV_SIZE   (64*1024)
