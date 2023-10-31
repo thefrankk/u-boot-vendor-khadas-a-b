@@ -215,8 +215,6 @@
             "else "\
                     "setenv bootargs ${bootargs} ${fs_type} androidboot.force_normal_boot=1;"\
             "fi;"\
-            "get_valid_slot;"\
-            "get_avb_mode;"\
             "echo active_slot: ${active_slot};"\
             "if test ${active_slot} != normal; then "\
                     "setenv bootargs ${bootargs} androidboot.slot_suffix=${active_slot};"\
