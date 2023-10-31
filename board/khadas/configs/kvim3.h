@@ -335,6 +335,14 @@
                "setenv bootargs ${bootargs} wol_enable=0;"\
             "fi;"\
             "\0"\
+        "check_camera="\
+            "fdt addr ${dtb_mem_addr}; "\
+            "if test ${khadas_camera_id} = 2; then "\
+                "echo check IMX415 camera;"\
+                "fdt set /sensor sensor_name imx415;"\
+                "fdt set /iq sensor_name imx415;"\
+            "fi;"\
+        "\0"\
         "spi_check="\
             "kbi factorytest;"\
              "if test ${factorytest} = 1; then "\
@@ -383,12 +391,20 @@
             "setenv serial ${usid};"\
             "kbi ethmac noprint;"\
             "setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
+            "setenv bootargs ${bootargs} khadas_camera_id=${khadas_camera_id};"\
         "factory_provision init;"\
             "\0"\
         "bcb_cmd="\
             "get_avb_mode;"\
             "get_valid_slot;"\
             "\0"\
+        "if test ${vendor_boot_mode} = true; then "\
+            "setenv dtb_mem_addr 0x1000000;"\
+            "fi;"\
+            "if test ${active_slot} != normal; then "\
+                "echo ab mode, read dtb from kernel;"\
+                "setenv common_dtb_load ""imgread dtb ${boot_part} ${dtb_mem_addr}"";"\
+            "fi;"\
         "burn_mac="\
             "kbi init;"\
             "\0"\
@@ -417,6 +433,7 @@
 #define CONFIG_PREBOOT  \
             "run bcb_cmd; "\
             "run burn_mac;"\
+            "run check_camera;"\
             "run factory_reset_poweroff_protect;"\
             "run upgrade_check;"\
             "run init_display;"\
