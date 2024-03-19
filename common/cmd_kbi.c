@@ -85,10 +85,18 @@
 #define PASSWD_VENDOR_LENGHT  6
 
 #define HW_VERSION_ADC_VALUE_TOLERANCE   0x28
+#define HW_VERSION_ADC_VAL_VIM1_V12      0x204
+#define HW_VERSION_ADC_VAL_VIM1_V13      0x28a
+#define HW_VERSION_ADC_VAL_VIM2_V12      0x200
+#define HW_VERSION_ADC_VAL_VIM2_V14      0x28a
 #define HW_VERSION_ADC_VAL_VIM3_V11      0x200
 #define HW_VERSION_ADC_VAL_VIM3_V12      0x288
 #define HW_VERSION_ADC_VAL_VIM3_V14      0x348
 #define HW_VERSION_UNKNOW                0x00
+#define HW_VERSION_VIM1_V12              0x12
+#define HW_VERSION_VIM1_V13              0x13
+#define HW_VERSION_VIM2_V12              0x22
+#define HW_VERSION_VIM2_V14              0x24
 #define HW_VERSION_VIM3_V11              0x31
 #define HW_VERSION_VIM3_V12              0x32
 #define HW_VERSION_VIM3_V14              0x34
@@ -302,6 +310,14 @@ static void get_mac(int is_print)
 static const char *hw_version_str(int hw_ver)
 {
 	switch (hw_ver) {
+		case HW_VERSION_VIM1_V12:
+			return "VIM1.V12";
+		case HW_VERSION_VIM1_V13:
+			return "VIM1.V13";
+		case HW_VERSION_VIM2_V12:
+			return "VIM2.V12";
+		case HW_VERSION_VIM2_V14:
+			return "VIM2.V14";
 		case HW_VERSION_VIM3_V11:
 			return "VIM3.V11";
 		case HW_VERSION_VIM3_V12:
@@ -322,14 +338,32 @@ static int get_hw_version(void)
 	udelay(100);
 
 	val = get_adc_sample_gxbb(1);
-	if ((val >= HW_VERSION_ADC_VAL_VIM3_V11 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V11 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
-		hw_ver = HW_VERSION_VIM3_V11;
-	} else if ((val >= HW_VERSION_ADC_VAL_VIM3_V12 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V12 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
-		hw_ver = HW_VERSION_VIM3_V12;
-	} else if ((val >= HW_VERSION_ADC_VAL_VIM3_V14 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V14 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
-		hw_ver = HW_VERSION_VIM3_V14;
-	} else {
+	if (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_GXM) {
+		if ((val >= HW_VERSION_ADC_VAL_VIM2_V12 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM2_V12 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM2_V12;
+		} else if ((val >= HW_VERSION_ADC_VAL_VIM2_V14 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM2_V14 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM2_V14;
+		} else {
 		hw_ver = HW_VERSION_UNKNOW;
+		}
+	} else if (get_cpu_id().family_id == MESON_CPU_MAJOR_ID_GXL) {
+		if ((val >= HW_VERSION_ADC_VAL_VIM1_V13 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM1_V13 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM1_V13;
+		} else if ((val >= HW_VERSION_ADC_VAL_VIM1_V12 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM1_V12 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM1_V12;
+		} else {
+			hw_ver = HW_VERSION_UNKNOW;
+		}
+	} else {
+		if ((val >= HW_VERSION_ADC_VAL_VIM3_V11 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V11 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM3_V11;
+		} else if ((val >= HW_VERSION_ADC_VAL_VIM3_V12 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V12 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM3_V12;
+		} else if ((val >= HW_VERSION_ADC_VAL_VIM3_V14 - HW_VERSION_ADC_VALUE_TOLERANCE) && (val <= HW_VERSION_ADC_VAL_VIM3_V14 + HW_VERSION_ADC_VALUE_TOLERANCE)) {
+			hw_ver = HW_VERSION_VIM3_V14;
+		} else {
+			hw_ver = HW_VERSION_UNKNOW;
+		}
 	}
 	printf("saradc: 0x%x, hw_ver: 0x%x (%s)\n", val, hw_ver, hw_version_str(hw_ver));
 
