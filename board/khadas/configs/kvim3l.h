@@ -402,13 +402,11 @@
                 "fdt set /ethernet@ff3f0000 internal_phy <1>;"\
                 "fdt set /ethernet@ff3f0000 mc_val <0x4be04>;"\
                 "fdt set /ethernet@ff3f0000 pinctrl-names internal_eth_pins;"\
-                "fdt set /ethernet@ff3f0000 pinctrl-0 <0x00000011>;"\
             "else "\
                 "echo use external 1000M network;"\
                 "fdt set /ethernet@ff3f0000 internal_phy <0>;"\
                 "fdt set /ethernet@ff3f0000 mc_val <0x1629>;"\
                 "fdt set /ethernet@ff3f0000 pinctrl-names external_eth_pins;"\
-                "fdt set /ethernet@ff3f0000 pinctrl-0 <0x00000011>;"\
             "fi;"\
 			"\0"\
         "bcb_cmd="\
