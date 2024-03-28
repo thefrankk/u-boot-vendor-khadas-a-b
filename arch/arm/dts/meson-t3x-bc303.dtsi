@@ -1,16 +1,14 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
 /*
- * Copyright (c) 2021 Amlogic, Inc. All rights reserved.
+ * Copyright (c) 2019 Amlogic, Inc. All rights reserved.
  */
 
-/* Common DTSI for devices which are based on the A311D2 reference board. */
-
-#include "meson-t7-txxx.dtsi"
+#include "meson-t3x-txxx.dtsi"
 
 / {
 	aliases {
-		serial0 = &uart_a;
-		serial1 = &uart_b;
+		serial0 = &uart_b;
+		serial1 = &uart_a;
 		spi0 = &spifc;
 		spi1 = &spicc0;
 		spi2 = &spicc1;
@@ -23,9 +21,6 @@
 		i2c2 = &i2c2;
 		i2c3 = &i2c3;
 		i2c4 = &i2c4;
-		i2c5 = &i2c5;
-		i2c6 = &i2c_AO_A;
-		i2c7 = &i2c_AO_B;
 	};
 
 	chosen {
@@ -67,7 +62,7 @@
 
 	emmc_pwrseq: emmc-pwrseq {
 		compatible = "mmc-pwrseq-emmc";
-		/*reset-gpios = <&gpio BOOT_12 GPIO_ACTIVE_LOW>;*/
+		/*reset-gpios = <&gpio BOOT_9 GPIO_ACTIVE_LOW>;*/
 	};
 
 	wifi32k: wifi32k {
@@ -79,7 +74,7 @@
 
 	sdio_pwrseq: sdio-pwrseq {
 		compatible = "mmc-pwrseq-simple";
-		reset-gpios = <&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
+		//reset-gpios = <&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
 		clocks = <&wifi32k>;
 		clock-names = "ext_clock";
 	};
@@ -91,7 +86,7 @@
 };
 
 &ethmac {
-	status = "okay";
+	status = "disabled";
 	internal_phy = <1>;
 	mc_val = <0x4be04>;
 	/*mc_val = <0x1621>;*/
@@ -166,6 +161,7 @@
 	bus-width = <8>;
 	cap-mmc-highspeed;
 	mmc-hs200-1_8v;
+	mmc-hs200-1_2v;
 	max-frequency = <200000000>;
 	non-removable;
 	disable-wp;
@@ -175,13 +171,13 @@
 	init_co_phase = <2>;
 	init_tx_phase = <0>;
 
-	hs_co_phase = <2>;
+	hs_co_phase = <3>;
 	hs_to_phase = <0>;
 
 	hs2_co_phase = <2>;
 	hs2_to_phase = <0>;
 
-	hw_reset = <&gpio GPIOB_12 GPIO_ACTIVE_HIGH>;
+	hw_reset = <&gpio GPIOB_9 GPIO_ACTIVE_HIGH>;
 
 	mmc-pwrseq = <&emmc_pwrseq>;
 	vmmc-supply = <&vcc_3v3>;
@@ -190,13 +186,18 @@
 
 /* nand */
 &nand {
-	status = "okay";
+	status = "disabled";
 	pinctrl-names = "default", "nand_cs_only";
 	pinctrl-0 = <&all_nand_pins>;
 	pinctrl-1 = <&nand_cs_pins>;
 };
 
-&crg {
+&crg0 {
+	status = "okay";
+	dr_mode = "host";
+};
+
+&crg1 {
 	status = "okay";
 	dr_mode = "host";
 };
@@ -207,31 +208,19 @@
 };
 
 &usb2_phy_v2 {
-		status = "okay";
-		portnum = <1>;
+	status = "okay";
+	portnum = <2>;
 };
 
 &usb3_phy_v2 {
-		status = "okay";
-		portnum = <0>;
-		gpio-vbus-power = "GPIOM_8";
-		gpios = <&gpio GPIOM_8 GPIO_ACTIVE_HIGH>;
-};
-
-&usb2_phy2_v2 {
-		status = "okay";
-		portnum = <1>;
-};
-
-&usb3_phy2_v2 {
-		status = "okay";
-		portnum = <0>;
-		gpio-vbus-power = "GPIOM_9";
-		gpios = <&gpio GPIOM_9 GPIO_ACTIVE_HIGH>;
+	status = "okay";
+	portnum = <0>;
+	gpio-vbus-power = "GPIOM_26";
+	gpios = <&gpio GPIOM_26 GPIO_ACTIVE_HIGH>;
 };
 
 &pwm_ef {
-	status = "okay";
+	status = "disabled";
 	/* pinctrl-0 = <&pwm_e_pins>; */
 	/* pinctrl-names = "default"; */
 };
@@ -246,58 +235,26 @@
 
 &spifc {
 	status = "okay";
-	cs-gpios = <&gpio GPIOB_12 GPIO_ACTIVE_HIGH>;
+	cs-gpios = <&gpio GPIOB_13 GPIO_ACTIVE_HIGH>;
 	spi-flash@0 {
 		status = "okay";
 	};
 };
 
-&spicc0 {
+&spicc0 {	//for TCON
 	status = "disabled";
 	pinctrl-names = "default";
-	pinctrl-0 = <&spicc0_pins>;
-	cs-gpios = <&gpio GPIOT_21 0>;
+	pinctrl-0 = <&spicc0_pins_h>;
 };
 
-&spicc1 {
-	status = "disabled";
+&spicc1 {	//for UWB/LocalDimm
+	status = "okay";
 	pinctrl-names = "default";
-	pinctrl-0 = <&spicc1_pins_1>;
-	cs-gpios = <&gpio GPIOC_3 0>;
+	pinctrl-0 = <&spicc1_pins_h>;
 };
 
 &spicc2 {
 	status = "disabled";
 	pinctrl-names = "default";
-	pinctrl-0 = <&spicc2_pins>;
-	cs-gpios = <&gpio GPIOY_3 0>;
-};
-
-&spicc3 {
-	status = "disabled";
-	pinctrl-names = "default";
-	pinctrl-0 = <&spicc3_pins>;
-	cs-gpios = <&gpio GPIOT_9 0>;
-	spi-flash@0 {
-		compatible = "spi-flash";
-		reg = <0>;
-		spi-max-frequency = <16000000>;
-		spi-tx-bus-width = <1>;
-		spi-rx-bus-width = <1>;
-		status = "disabled";
-		};
-};
-
-&spicc4 {
-	status = "disabled";
-	pinctrl-names = "default";
-	pinctrl-0 = <&spicc4_pins>;
-	cs-gpios = <&gpio GPIOZ_3 0>;
-};
-
-&spicc5 {
-	status = "disabled";
-	pinctrl-names = "default";
-	pinctrl-0 = <&spicc5_pins>;
-	cs-gpios = <&gpio GPIOZ_7 0>;
+	pinctrl-0 = <&spicc2_pins_c>;
 };

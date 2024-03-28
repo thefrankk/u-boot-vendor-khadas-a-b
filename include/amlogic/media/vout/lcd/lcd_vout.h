@@ -11,6 +11,7 @@
 #include <dm.h>
 #include <asm/gpio.h>
 #include <amlogic/media/vout/lcd/lcd_timing.h>
+#include <amlogic/media/vout/lcd/lcd_cus_ctrl.h>
 #ifdef CONFIG_AML_LCD_TCON
 #include <amlogic/media/vout/lcd/lcd_tcon_data.h>
 #endif
@@ -118,8 +119,9 @@ struct lcd_basic_s {
 	unsigned short screen_height; /* screen physical height in "mm" unit */
 };
 
-#define LCD_CLK_FRAC_UPDATE     (1 << 0)
-#define LCD_CLK_PLL_CHANGE      (1 << 1)
+#define LCD_CLK_FRAC_UPDATE     BIT(0)
+#define LCD_CLK_PLL_CHANGE      BIT(1)
+#define LCD_CLK_PLL_RESET       BIT(2)
 struct lcd_timing_s {
 	struct lcd_detail_timing_s dft_timing; //panel parameter probe stage
 	struct lcd_detail_timing_s base_timing; //panel parameter init stage
@@ -284,6 +286,13 @@ struct dsi_dphy_s {
 	unsigned int wakeup;
 };
 
+struct dsi_panel_det_attr_s {
+	unsigned char *det_init_table[8];
+	unsigned char *det_match_seq[8];
+	char *det_type[8];
+	char *fallback_type;
+};
+
 struct dsi_config_s {
 	/* user config */
 	unsigned char lane_num;
@@ -316,15 +325,19 @@ struct dsi_config_s {
 	unsigned char *dsi_init_off;
 	unsigned char extern_init;
 
+	unsigned char dsi_rd_n;
+	struct dsi_dphy_s dphy;
+
+	//dsi_panel_check.c
 	unsigned char check_en;
 	unsigned char check_reg;
 	unsigned char check_cnt;
 	unsigned char check_state;
-
-	unsigned char current_mode;
-
-	unsigned char dsi_rd_n;
-	struct dsi_dphy_s dphy;
+	//dsi_panel_detect.c
+	char matched_panel[20];
+	char dsi_detect_dtb_path[30];
+	char *dt_addr;
+	unsigned char panel_det_attr; //[0]:det_en, [1]:store2env, [2]:0=bsp/1=dts [3]:on_matched
 };
 
 #define EDP_EDID_RETRY_MAX      3
@@ -505,8 +518,14 @@ struct lcd_pinmux_ctrl_s {
 };
 
 struct cus_ctrl_config_s {
-	unsigned int flag;
-	unsigned char ufr_flag;
+	unsigned int ctrl_en;
+	unsigned int ctrl_cnt;
+	unsigned int timing_cnt;
+	unsigned int active_timing_type;
+	unsigned char timing_switch_flag;
+	unsigned char timing_ctrl_valid;
+
+	struct lcd_cus_ctrl_attr_config_s *attr_config;
 };
 
 #define LCD_ENABLE_RETRY_MAX    3
@@ -528,11 +547,35 @@ struct lcd_config_s {
 	unsigned int pinmux_clr[LCD_PINMUX_NUM][2];
 };
 
+#define LCD_DURATION_MAX    8
 struct lcd_duration_s {
 	unsigned int frame_rate;
 	unsigned int duration_num;
 	unsigned int duration_den;
 	unsigned int frac;
+};
+
+struct lcd_vmode_info_s {
+	char name[32];
+	unsigned int width;
+	unsigned int height;
+	unsigned int base_fr;
+	unsigned int duration_index;
+	unsigned int duration_cnt;
+	struct lcd_duration_s duration[LCD_DURATION_MAX];
+	struct lcd_detail_timing_s *dft_timing;
+};
+
+struct lcd_vmode_list_s {
+	struct lcd_vmode_info_s *info;
+	struct lcd_vmode_list_s *next;
+};
+
+struct lcd_vmode_mgr_s {
+	unsigned int vmode_cnt;
+	struct lcd_vmode_list_s *vmode_list_header;
+	struct lcd_vmode_info_s *cur_vmode_info;
+	struct lcd_vmode_info_s *next_vmode_info;
 };
 
 #define LCD_INIT_LEVEL_NORMAL         0
@@ -635,10 +678,10 @@ struct aml_lcd_drv_s {
 	unsigned int status;
 	unsigned char mode;
 	unsigned char key_valid;
+	unsigned char probe_done;
 	unsigned char clk_path; /* 0=hpll, 1=gp0_pll */
 	char init_mode[64];
 	int init_frac;
-	unsigned int output_vmode;
 	unsigned int power_on_suspend;
 	unsigned char clk_conf_num;
 	unsigned char config_check_glb;
@@ -648,12 +691,13 @@ struct aml_lcd_drv_s {
 	struct aml_lcd_data_s *data;
 	struct lcd_boot_ctrl_s boot_ctrl;
 	struct lcd_duration_s *std_duration;
+	struct lcd_vmode_mgr_s vmode_mgr;
 	void *clk_conf;
 	struct aml_lcd_cma_mem cma_pool;
 	struct lcd_disp_tmg_req_s disp_req;
 
-	int  (*outputmode_check)(struct aml_lcd_drv_s *pdrv, char *mode, unsigned int frac);
-	int  (*config_valid)(struct aml_lcd_drv_s *pdrv, char *mode, unsigned int frac);
+	int  (*outputmode_check)(struct aml_lcd_drv_s *pdrv, char *mode);
+	int  (*config_valid)(struct aml_lcd_drv_s *pdrv, char *mode);
 	void (*driver_init_pre)(struct aml_lcd_drv_s *pdrv);
 	int  (*driver_init)(struct aml_lcd_drv_s *pdrv);
 	void (*driver_disable)(struct aml_lcd_drv_s *pdrv);

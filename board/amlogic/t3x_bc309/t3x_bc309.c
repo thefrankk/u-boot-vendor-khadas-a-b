@@ -182,6 +182,7 @@ int board_late_init(void)
 	printf("board late init\n");
 	env_set("defenv_para", "-c -b0");
 	aml_board_late_init_front(NULL);
+	get_stick_reboot_flag_mbx();
 
 #ifndef CONFIG_PXP_EMULATOR
 #ifdef CONFIG_AML_VPU
@@ -264,10 +265,11 @@ struct mm_region *mem_map = bd_mem_map;
 int mach_cpu_init(void)
 {
 	//printf("\nmach_cpu_init\n");
-	unsigned long nddrSize = (readl(SYSCTRL_SEC_STATUS_REG4) & ~0xfffffUL) << 4;
 
-	if (nddrSize <= 0xe0000000)
-		bd_mem_map[0].size = nddrSize;
+	ulong nddrSize = ((readl(SYSCTRL_SEC_STATUS_REG4) & ~0xfffffUL) << 4) >= 0xe0000000 ?
+		0xe0000000 : (readl(SYSCTRL_SEC_STATUS_REG4) & ~0xfffffUL) << 4;
+
+	bd_mem_map[0].size = nddrSize;
 
 	return 0;
 }

@@ -55,6 +55,12 @@ struct hdmitx_dev {
 	enum mode_type hdmi_current_tunnel_mode;
 	/* Add dongle_mode, clock, phy may be different from mbox */
 	unsigned int dongle_mode;
+	/* edid_check = 0 is default check
+	 * Bit 0     (0x01)  don't check block header
+	 * Bit 1     (0x02)  don't check edid checksum
+	 * Bit 0+1   (0x03)  don't check both block header and checksum
+	 */
+	unsigned int edid_check;
 	unsigned char limit_res_1080p;
 	unsigned char enc_idx;
 	int dv_en;
@@ -175,6 +181,7 @@ bool hdmitx_edid_check_valid_mode(struct hdmitx_dev *hdev,
 void hdmitx_dsc_cvtem_pkt_send(struct dsc_pps_data_s *pps,
 	struct hdmi_timing *timing);
 void hdmitx_dsc_cvtem_pkt_disable(void);
+enum hdmi_vic hdmitx21_get_prefer_vic(struct hdmitx_dev *hdev, enum hdmi_vic vic);
 #undef printk
 #define printk printf
 #undef pr_info

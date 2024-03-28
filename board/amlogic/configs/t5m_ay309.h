@@ -75,11 +75,19 @@
 //USB_POWEROFF
 #define AMLOGIC_USB_POWER
 
+#ifdef CONFIG_NOVERBOSE_BUILD
+#define SILENT		"silent=1\0"
+#define KERNL_LOGLEVEL	"loglevel=2 "
+#else
+#define SILENT		"silent=0\0"
+#define KERNL_LOGLEVEL	"loglevel=7 "
+#endif
+
 /* args/envs */
 #define CONFIG_SYS_MAXARGS  64
 #define CONFIG_EXTRA_ENV_SETTINGS \
 	CONFIG_EXTRA_ENV_SETTINGS_BASE \
-		"silent=1\0"\
+		SILENT \
 		"systemsuspend_switch=0\0"\
 		"ddr_resume=0\0"\
 		"otg_device=1\0" \
@@ -279,6 +287,7 @@
 		"\0"\
 	"check_display="\
 		"echo check_display reboot_mode : ${reboot_mode} ,powermode : ${powermode};"\
+		"setenv ddr_resume 0; "\
 		"if test ${reboot_mode} = ffv_reboot; then "\
 			"if test ${ffv_wake} = on; then "\
 				"echo ffv reboot no display; "\

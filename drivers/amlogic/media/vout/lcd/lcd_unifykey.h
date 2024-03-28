@@ -126,6 +126,14 @@ struct lcd_unifykey_header_s {
 /* custom ctrl (68Byte) */
 #define LCD_UKEY_CUS_CTRL_ATTR_FLAG     (LCD_UKEY_HEAD_SIZE + 356)
 #define LCD_UKEY_CUS_CTRL_ATTR_0        (LCD_UKEY_HEAD_SIZE + 360)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM0  (LCD_UKEY_HEAD_SIZE + 362)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM1  (LCD_UKEY_HEAD_SIZE + 364)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM2  (LCD_UKEY_HEAD_SIZE + 366)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM3  (LCD_UKEY_HEAD_SIZE + 368)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM4  (LCD_UKEY_HEAD_SIZE + 370)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM5  (LCD_UKEY_HEAD_SIZE + 372)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM6  (LCD_UKEY_HEAD_SIZE + 374)
+#define LCD_UKEY_CUS_CTRL_ATTR_0_PARM7  (LCD_UKEY_HEAD_SIZE + 376)
 #define LCD_UKEY_CUS_CTRL_END           (LCD_UKEY_HEAD_SIZE + 424)
 
 /* ********************************
@@ -392,19 +400,13 @@ struct lcd_tcon_spi_unifykey_header_s {
  * API
  * ********************************* */
 int lcd_unifykey_len_check(int key_len, int len);
-int lcd_unifykey_header_check(unsigned char *buf,
-			      struct lcd_unifykey_header_s *header);
 int lcd_unifykey_check_exist(const char *key_name);
 int lcd_unifykey_check(const char *key_name);
-int lcd_unifykey_get(const char *key_name, unsigned char *buf, int *len);
-int lcd_unifykey_get_tcon(const char *key_name, unsigned char *buf, int *len);
-int lcd_unifykey_check_no_header(const char *key_name);
-int lcd_unifykey_get_no_header(const char *key_name, unsigned char *buf,
-			       int *len);
+int lcd_unifykey_get_size(const char *key_name, int *len);
+int lcd_unifykey_get(const char *key_name, unsigned char *buf, int len);
+int lcd_unifykey_get_tcon(const char *key_name, unsigned char *buf, int len);
+int lcd_unifykey_get_no_header(const char *key_name, unsigned char *buf, int len);
 int lcd_unifykey_write(const char *key_name, unsigned char *buf, int len);
-
-void lcd_unifykey_test(void);
-void lcd_unifykey_tcon_test(int n);
 void lcd_unifykey_dump(int index, unsigned int flag);
 
 #endif

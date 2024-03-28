@@ -141,14 +141,13 @@ static void bl_pwm_pinmux_gpio_set(struct aml_bl_drv_s *bdrv, int pwm_index, int
 	if (bl_pwm->pinmux_flag > 0) {
 		i = 0;
 		while (i < LCD_PINMUX_NUM) {
-			if (bl_pwm->pinmux_set[i][0] == LCD_PINMUX_END)
+			if (bl_pwm->pinmux_clr[i][0] == LCD_PINMUX_END)
 				break;
-			lcd_pinmux_clr_mask(bl_pwm->pinmux_set[i][0],
-				bl_pwm->pinmux_set[i][1]);
+			lcd_pinmux_clr_mask(bl_pwm->pinmux_clr[i][0], bl_pwm->pinmux_clr[i][1]);
 			if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
-			BLPR("%s: port=0x%x, pinmux_clr=%d,0x%08x\n",
-				__func__, bl_pwm->pwm_port,
-				bl_pwm->pinmux_set[i][0], bl_pwm->pinmux_set[i][1]);
+				BLPR("%s: port=0x%x, pinmux_clr=0x%x,0x%08x\n",
+					__func__, bl_pwm->pwm_port,
+					bl_pwm->pinmux_clr[i][0], bl_pwm->pinmux_clr[i][1]);
 			}
 			i++;
 		}
@@ -202,12 +201,23 @@ static void bl_pwm_pinmux_gpio_clr(struct aml_bl_drv_s *bdrv, unsigned int pwm_i
 	/* set pinmux */
 	i = 0;
 	while (i < LCD_PINMUX_NUM) {
+		if (bl_pwm->pinmux_clr[i][0] == LCD_PINMUX_END)
+			break;
+		lcd_pinmux_clr_mask(bl_pwm->pinmux_clr[i][0], bl_pwm->pinmux_clr[i][1]);
+		if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
+			BLPR("%s: port=0x%x, pinmux_clr=0x%x,0x%08x\n",
+				__func__, bl_pwm->pwm_port,
+				bl_pwm->pinmux_clr[i][0], bl_pwm->pinmux_clr[i][1]);
+		}
+		i++;
+	}
+	i = 0;
+	while (i < LCD_PINMUX_NUM) {
 		if (bl_pwm->pinmux_set[i][0] == LCD_PINMUX_END)
 			break;
-		lcd_pinmux_set_mask(bl_pwm->pinmux_set[i][0],
-			bl_pwm->pinmux_set[i][1]);
+		lcd_pinmux_set_mask(bl_pwm->pinmux_set[i][0], bl_pwm->pinmux_set[i][1]);
 		if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
-			BLPR("%s: port=0x%x, pinmux_set=%d,0x%08x\n",
+			BLPR("%s: port=0x%x, pinmux_set=0x%x,0x%08x\n",
 				__func__, bl_pwm->pwm_port,
 				bl_pwm->pinmux_set[i][0], bl_pwm->pinmux_set[i][1]);
 		}
@@ -286,15 +296,15 @@ static void bl_pwm_pinmux_ctrl(struct aml_bl_drv_s *bdrv, int status)
 		case BL_CTRL_PWM:
 			i = 0;
 			while (i < LCD_PINMUX_NUM) {
-				if (bconf->bl_pwm->pinmux_set[i][0] == LCD_PINMUX_END)
+				if (bconf->bl_pwm->pinmux_clr[i][0] == LCD_PINMUX_END)
 					break;
-				lcd_pinmux_clr_mask(bconf->bl_pwm->pinmux_set[i][0],
-					bconf->bl_pwm->pinmux_set[i][1]);
+				lcd_pinmux_clr_mask(bconf->bl_pwm->pinmux_clr[i][0],
+					bconf->bl_pwm->pinmux_clr[i][1]);
 				if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
-					BLPR("%s: port=0x%x, pinmux_clr=%d,0x%08x\n",
+					BLPR("%s: port=0x%x, pinmux_clr=0x%x,0x%08x\n",
 						__func__, bconf->bl_pwm->pwm_port,
-						bconf->bl_pwm->pinmux_set[i][0],
-						bconf->bl_pwm->pinmux_set[i][1]);
+						bconf->bl_pwm->pinmux_clr[i][0],
+						bconf->bl_pwm->pinmux_clr[i][1]);
 				}
 				i++;
 			}
@@ -312,29 +322,29 @@ static void bl_pwm_pinmux_ctrl(struct aml_bl_drv_s *bdrv, int status)
 		case BL_CTRL_PWM_COMBO:
 			i = 0;
 			while (i < LCD_PINMUX_NUM) {
-				if (bconf->bl_pwm_combo0->pinmux_set[i][0] == LCD_PINMUX_END)
+				if (bconf->bl_pwm_combo0->pinmux_clr[i][0] == LCD_PINMUX_END)
 					break;
-				lcd_pinmux_clr_mask(bconf->bl_pwm_combo0->pinmux_set[i][0],
-					bconf->bl_pwm_combo0->pinmux_set[i][1]);
+				lcd_pinmux_clr_mask(bconf->bl_pwm_combo0->pinmux_clr[i][0],
+					bconf->bl_pwm_combo0->pinmux_clr[i][1]);
 				if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
-					BLPR("%s: port=0x%x, pinmux_clr=%d,0x%08x\n",
+					BLPR("%s: port=0x%x, pinmux_clr=0x%x,0x%08x\n",
 						__func__, bconf->bl_pwm_combo0->pwm_port,
-						bconf->bl_pwm_combo0->pinmux_set[i][0],
-						bconf->bl_pwm_combo0->pinmux_set[i][1]);
+						bconf->bl_pwm_combo0->pinmux_clr[i][0],
+						bconf->bl_pwm_combo0->pinmux_clr[i][1]);
 				}
 				i++;
 			}
 			i = 0;
 			while (i < LCD_PINMUX_NUM) {
-				if (bconf->bl_pwm_combo1->pinmux_set[i][0] == LCD_PINMUX_END)
+				if (bconf->bl_pwm_combo1->pinmux_clr[i][0] == LCD_PINMUX_END)
 					break;
-				lcd_pinmux_clr_mask(bconf->bl_pwm_combo1->pinmux_set[i][0],
-					bconf->bl_pwm_combo1->pinmux_set[i][1]);
+				lcd_pinmux_clr_mask(bconf->bl_pwm_combo1->pinmux_clr[i][0],
+					bconf->bl_pwm_combo1->pinmux_clr[i][1]);
 				if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
-					BLPR("%s: port=0x%x, pinmux_clr=%d,0x%08x\n",
+					BLPR("%s: port=0x%x, pinmux_clr=0x%x,0x%08x\n",
 						__func__, bconf->bl_pwm_combo1->pwm_port,
-						bconf->bl_pwm_combo1->pinmux_set[i][0],
-						bconf->bl_pwm_combo1->pinmux_set[i][1]);
+						bconf->bl_pwm_combo1->pinmux_clr[i][0],
+						bconf->bl_pwm_combo1->pinmux_clr[i][1]);
 				}
 				i++;
 			}
@@ -1383,14 +1393,20 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 	unsigned char *p;
 	const char *str;
 	char sname[20];
-	struct lcd_unifykey_header_s bl_header;
+	struct lcd_unifykey_header_s *bl_header;
 	struct bl_config_s *bconf = &bdrv->config;
 	struct bl_pwm_config_s *bl_pwm;
 	struct bl_pwm_config_s *pwm_combo0, *pwm_combo1;
 	int ret;
 	unsigned int temp;
 
-	key_len = LCD_UKEY_BL_SIZE;
+	if (bdrv->index == 0)
+		sprintf(sname, "backlight");
+	else
+		sprintf(sname, "backlight%d", bdrv->index);
+	ret = lcd_unifykey_get_size(sname, &key_len);
+	if (ret)
+		return -1;
 	para = (unsigned char *)malloc(sizeof(unsigned char) * key_len);
 	if (!para) {
 		BLERR("%s: Not enough memory\n", __func__);
@@ -1398,29 +1414,17 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 	}
 	memset(para, 0, (sizeof(unsigned char) * key_len));
 
-	if (bdrv->index == 0)
-		sprintf(sname, "backlight");
-	else
-		sprintf(sname, "backlight%d", bdrv->index);
-	ret = lcd_unifykey_get(sname, para, &key_len);
+	ret = lcd_unifykey_get(sname, para, key_len);
 	if (ret) {
 		free(para);
 		return -1;
 	}
 
 	/* step 1: check header */
-	len = LCD_UKEY_HEAD_SIZE;
-	ret = lcd_unifykey_len_check(key_len, len);
-	if (ret) {
-		BLERR("unifykey header length is incorrect\n");
-		free(para);
-		return -1;
-	}
-
-	lcd_unifykey_header_check(para, &bl_header);
+	bl_header = (struct lcd_unifykey_header_s *)para;
 	BLPR("[%d]: load config from unifykey, version: 0x%x\n",
-		bdrv->index, bl_header.version);
-	switch (bl_header.version) {
+		bdrv->index, bl_header->version);
+	switch (bl_header->version) {
 	case 2:
 		len = 10 + 30 + 12 + 8 + 32 + 10;
 		break;
@@ -1430,8 +1434,8 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 	}
 	if (lcd_debug_print_flag & LCD_DBG_PR_BL_NORMAL) {
 		BLPR("unifykey header:\n");
-		BLPR("crc32             = 0x%08x\n", bl_header.crc32);
-		BLPR("data_len          = %d\n", bl_header.data_len);
+		BLPR("crc32             = 0x%08x\n", bl_header->crc32);
+		BLPR("data_len          = %d\n", bl_header->data_len);
 	}
 
 	/* step 2: check backlight parameters */
@@ -1509,7 +1513,7 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 		bl_pwm->pwm_gpio = *(p + LCD_UKEY_BL_PWM_GPIO);
 		bl_pwm->pwm_gpio_off = *(p + LCD_UKEY_BL_PWM_GPIO_OFF);
 
-		if (bl_header.version == 2)
+		if (bl_header->version == 2)
 			bconf->en_sequence_reverse =
 				(*(p + LCD_UKEY_BL_CUST_VAL_0) |
 				((*(p + LCD_UKEY_BL_CUST_VAL_0 + 1)) << 8));
@@ -1589,7 +1593,7 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 		pwm_combo1->bl_level_min = (*(p + LCD_UKEY_BL_PWM2_LEVEL_MIN) |
 			((*(p + LCD_UKEY_BL_PWM2_LEVEL_MIN + 1)) << 8));
 
-		if (bl_header.version == 2)
+		if (bl_header->version == 2)
 			bconf->en_sequence_reverse = (*(p + LCD_UKEY_BL_CUST_VAL_0) |
 				((*(p + LCD_UKEY_BL_CUST_VAL_0 + 1)) << 8));
 		else
@@ -1606,11 +1610,11 @@ static int bl_config_load_from_unifykey(char *dt_addr, struct aml_bl_drv_s *bdrv
 			BLERR("no ldim driver\n");
 			break;
 		}
-		if (bl_header.version == 2) {
+		if (bl_header->version == 2) {
 			aml_ldim_probe(bdrv, dt_addr, 0, para, 2);
 		} else {
 			BLERR("not support ldim for unifykey version: %d\n",
-			      bl_header.version);
+			      bl_header->version);
 		}
 		break;
 #endif
@@ -2226,87 +2230,68 @@ static int lcd_bl_init_load_from_bsp(struct aml_bl_drv_s *bdrv)
 	return 0;
 }
 
-int aml_bl_probe(char *dtaddr, int load_id)
+static struct aml_bl_drv_s *bl_driver_add_single(unsigned char index)
 {
-	struct aml_lcd_data_s *pdata = aml_lcd_get_data();
-	struct aml_bl_drv_s *bdrv;
-	int load_id_bl, load_id_temp;
-	int i, ret;
+	struct aml_bl_drv_s *bdrv = bl_driver[index];
 
-	if (!pdata) {
-		BLERR("%s: pdata is NULL\n", __func__);
-		return -1;
+	if (bl_index_lut[index] >= BL_INDEX_INVALID)
+		return NULL;
+
+	if (!bdrv) {
+		bdrv = (struct aml_bl_drv_s *)malloc(sizeof(struct aml_bl_drv_s));
+		if (!bdrv) {
+			BLERR("%s: Not enough memory\n", __func__);
+			return NULL;
+		}
 	}
+	bl_driver[index] = bdrv;
+	memset(bdrv, 0, sizeof(struct aml_bl_drv_s));
+	bdrv->index = index;
+	bdrv->data = aml_lcd_get_data();
 
-	aml_bl_pwm_reg_config_init(pdata);
+	/* default config */
+	bdrv->config.index = bl_index_lut[index];
+	bdrv->config.method = BL_CTRL_MAX;
+	bdrv->config.en_gpio = 0xff;
+	bdrv->config.extern_index = 0xff;
+	bdrv->factory_bl_on_delay = -1;
 
-	load_id_bl = load_id;
-	for (i = 0; i < LCD_MAX_DRV; i++) {
-		if (bl_index_lut[i] >= BL_INDEX_INVALID)
-			continue;
-
-		if (!bl_driver[i]) {
-			bl_driver[i] = (struct aml_bl_drv_s *)
-				malloc(sizeof(struct aml_bl_drv_s));
-			if (!bl_driver[i]) {
-				BLERR("%s: Not enough memory\n", __func__);
-				return -1;
-			}
-		}
-		bdrv = bl_driver[i];
-		memset(bdrv, 0, sizeof(struct aml_bl_drv_s));
-		bdrv->index = i;
-		bdrv->data = pdata;
-
-		/* default config */
-		bdrv->config.index = bl_index_lut[i];
-		bdrv->config.method = BL_CTRL_MAX;
-		bdrv->config.en_gpio = 0xff;
-		bdrv->config.extern_index = 0xff;
-		bdrv->factory_bl_on_delay = -1;
-
-		if (load_id_bl & 0x1) {
-			ret = lcd_bl_init_load_from_dts(dtaddr, bdrv);
-			if (ret) {
-				free(bl_driver[i]);
-				bl_driver[i] = NULL;
-				return -1;
-			}
-		} else {
-			ret = lcd_bl_init_load_from_bsp(bdrv);
-			if (ret) {
-				free(bl_driver[i]);
-				bl_driver[i] = NULL;
-				return -1;
-			}
-		}
-		load_id_temp = load_id_bl & 0xff;
-		if ((load_id_bl & (1 << 8)) == 0) {
-			if (bdrv->key_valid)
-				load_id_temp |= (1 << 4);
-			else
-				load_id_temp &= ~(1 << 4);
-		}
-
-		/* load bl config */
-		bl_config_load(dtaddr, load_id_temp, bdrv);
-		bl_power_init_off(bdrv);
-	}
-
-	return 0;
+	return bdrv;
 }
 
-int aml_bl_remove(void)
+static void bl_driver_remove_single(unsigned char index)
 {
-	int i = 0;
+	free(bl_driver[index]);
+	bl_driver[index] = NULL;
+}
 
-	for (i = 0; i < LCD_MAX_DRV; i++) {
-		if (bl_driver[i])
-			free(bl_driver[i]);
-		bl_driver[i] = NULL;
+void aml_bl_probe_single(unsigned char index, int load_id)
+{
+	struct aml_bl_drv_s *bdrv = bl_driver_add_single(index);
+	int ret;
+
+	if (!bdrv)
+		return;
+
+	if (load_id & 0x1)
+		ret = lcd_bl_init_load_from_dts(lcd_get_dt_addr(), bdrv);
+	else
+		ret = lcd_bl_init_load_from_bsp(bdrv);
+	if (ret) {
+		bl_driver_remove_single(index);
+		return;
 	}
+	/* load bl config */
+	bl_config_load(lcd_get_dt_addr(), load_id, bdrv);
+	bl_power_init_off(bdrv);
+}
 
-	return 0;
+void aml_bl_remove_all(void)
+{
+	int i;
+
+	for (i = 0; i < LCD_MAX_DRV; i++)
+		bl_driver_remove_single(i);
 }
 
 int aml_bl_index_add(int drv_index, int conf_index)
@@ -2341,11 +2326,12 @@ int aml_bl_index_remove(int drv_index)
 int aml_bl_init(void)
 {
 	int i;
+	struct aml_lcd_data_s *lcd_data = aml_lcd_get_data();
+
+	aml_bl_pwm_reg_config_init(lcd_data);
 
 	for (i = 0; i < LCD_MAX_DRV; i++) {
-		if (bl_driver[i])
-			free(bl_driver[i]);
-		bl_driver[i] = NULL;
+		bl_driver_remove_single(i);
 		bl_index_lut[i] = BL_INDEX_INVALID;
 	}
 

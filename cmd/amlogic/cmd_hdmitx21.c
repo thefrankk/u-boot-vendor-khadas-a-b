@@ -48,6 +48,10 @@ static int do_edid(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	unsigned char st = 0;
 	struct hdmitx_dev *hdev = get_hdmitx21_device();
 
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 	memset(edid_raw_buf, 0, ARRAY_SIZE(edid_raw_buf));
 
 	st = hdev->hwop.read_edid(edid_raw_buf);
@@ -63,6 +67,10 @@ static int do_rx_det(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	unsigned char st = 0;
 	struct hdmitx_dev *hdev = get_hdmitx21_device();
 
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 	memset(edid_raw_buf, 0, ARRAY_SIZE(edid_raw_buf));
 
 	// read edid raw data
@@ -173,6 +181,21 @@ static void qms_scene_pre_process(struct hdmitx_dev *hdev)
 	enum hdmi_vic qms_brr_vic = HDMI_UNKNOWN;
 	const struct hdmi_timing *t = NULL;
 	char *color = NULL;
+	const char *i_modes[3] = {
+		"480i", "576i", "1080i",
+	};
+	char *mode;
+	int i;
+
+	hdev->qms_en = 0; /* default as 0 */
+	/* if current mode is interlaced mode, then skip QMS */
+	mode = env_get("hdmimode");
+	if (!mode)
+		return;
+	for (i = 0; i < 3; i++) {
+		if (strstr(mode, i_modes[i]))
+			return;
+	}
 
 	/* check uboot environment */
 	if (env_get("qms_en") && (env_get_ulong("qms_en", 10, 0) == 1))
@@ -189,8 +212,6 @@ static void qms_scene_pre_process(struct hdmitx_dev *hdev)
 	if (!hdev->qms_en)
 		return;
 	hdev->brr_vic = qms_brr_vic;
-	/* save brr_vic to vic without the environment */
-	hdev->vic = hdev->brr_vic;
 	/* reconfig the hdmi para */
 	t = hdmitx21_gettiming_from_vic(hdev->brr_vic);
 	if (!t) {
@@ -200,13 +221,27 @@ static void qms_scene_pre_process(struct hdmitx_dev *hdev)
 	color = env_get("user_colorattribute");
 	if (!color)
 		color = env_get("colorattribute");
+	/* save brr_vic to vic without the environment */
+	hdev->vic = hdev->brr_vic;
 	hdev->para = hdmitx21_get_fmtpara(t->sname ? t->sname : t->name, color);
 }
 
 static void qms_scene_post_process(struct hdmitx_dev *hdev)
 {
+	const struct hdmi_timing *t = NULL;
+
 	// Init QMS parameter
 	vrr_init_qms_para(hdev);
+
+	/* set the BRR name as hdmimode and outputmode */
+	if (hdev->qms_en) {
+		t = hdmitx21_gettiming_from_vic(hdev->brr_vic);
+		if (t) {
+			env_set("hdmimode", t->sname ? t->sname : t->name);
+			env_set("outputmode", env_get("hdmimode")); /* reassing to outputmode */
+			pr_info("set outputmode as %s %d\n", env_get("outputmode"), hdev->brr_vic);
+		}
+	}
 }
 
 static int do_output(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
@@ -216,6 +251,10 @@ static int do_output(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 
 	if (argc < 1)
 		return cmd_usage(cmdtp);
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 
 	if (strcmp(argv[1], "list") == 0) {
 		hdev->hwop.list_support_modes();
@@ -236,6 +275,10 @@ static int do_output(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 			mode = simple_strtoul(argv[2], NULL, 10);
 		hdev->hwop.test_bist(mode);
 	} else if (strcmp(argv[1], "prbs") == 0) {
+		if (!hdev->para) {
+			printf("null hdmitx para\n");
+			return CMD_RET_FAILURE;
+		}
 		hdev->para->cs = HDMI_COLORSPACE_RGB;
 		hdev->para->cd = COLORDEPTH_24B;
 		hdev->vic = HDMI_16_1920x1080p60_16x9;
@@ -274,11 +317,17 @@ static int do_output(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 		if (!env_get("colorattribute"))
 			env_set("colorattribute", "444,8bit");
 		hdev->para = hdmitx21_get_fmtpara(argv[1], env_get("colorattribute"));
+		if (!hdev->para) {
+			printf("null hdmitx para\n");
+			return CMD_RET_FAILURE;
+		}
 		hdev->vic = hdev->para->timing.vic;
 		if (hdev->vic == HDMI_UNKNOWN) {
 			/* Not find VIC */
 			printf("Not find '%s' mapped VIC\n", argv[1]);
 			return CMD_RET_FAILURE;
+		} else {
+			printf("set hdmitx VIC = %d\n", hdev->vic);
 		}
 		if (strstr(argv[1], "hz420"))
 			hdev->para->cs = HDMI_COLORSPACE_YUV420;
@@ -411,6 +460,10 @@ static int do_off(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
 	struct hdmitx_dev *hdev = get_hdmitx21_device();
 
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 	hdev->vic = HDMI_UNKNOWN;
 	if (hdev->chip_type == MESON_CPU_ID_S5)
 		hdmitx_module_disable();
@@ -422,6 +475,11 @@ static int do_off(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 static int do_dump(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 {
 	struct hdmitx_dev *hdev = get_hdmitx21_device();
+
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 
 	hdev->hwop.dump_regs();
 	return 1;
@@ -471,6 +529,7 @@ static void disp_cap_show(struct hdmitx_dev *hdev)
 	const struct hdmi_timing *timing = NULL;
 	enum hdmi_vic vic;
 	int i;
+	enum hdmi_vic prefer_vic = HDMI_UNKNOWN;
 
 	if (!hdev)
 		return;
@@ -481,6 +540,13 @@ static void disp_cap_show(struct hdmitx_dev *hdev)
 		vic = rxcap->VIC[i];
 		if (check_vic_exist(hdev, vic, i))
 			continue;
+		prefer_vic = hdmitx21_get_prefer_vic(hdev, vic);
+		/* if mode_prefer_vic is support by RX, try 16x9 first */
+		if (prefer_vic != vic) {
+			printf("%s: check best vic:%d exist, ignore [%d].\n",
+					__func__, prefer_vic, vic);
+			continue;
+		}
 		timing = hdmitx21_gettiming_from_vic(vic);
 		if (timing && vic < HDMITX_VESA_OFFSET && !is_vic_over_limited_1080p(vic))
 			printf("  %s\n", timing->sname ? timing->sname : timing->name);
@@ -765,6 +831,10 @@ static int xtochar(int num, char *checksum)
 {
 	struct hdmitx_dev *hdev = get_hdmitx21_device();
 
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return -1;
+	}
 	if (((hdev->rawedid[num] >> 4) & 0xf) <= 9)
 		checksum[0] = ((hdev->rawedid[num] >> 4) & 0xf) + '0';
 	else
@@ -1036,6 +1106,10 @@ static int do_get_parse_edid(cmd_tbl_t *cmdtp, int flag, int argc, char *const a
 	 */
 	bool no_manual_output = false;
 
+	if (!hdev) {
+		printf("null hdmitx dev\n");
+		return CMD_RET_FAILURE;
+	}
 	if (!hdev->hpd_state) {
 		printf("HDMI HPD low, no need parse EDID\n");
 		return 1;

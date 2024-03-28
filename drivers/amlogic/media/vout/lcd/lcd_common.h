@@ -58,7 +58,14 @@
 /* 20231205: add lcd config check*/
 /* 20231218: update timing management*/
 /* 20240118: MIPI DSI arch adjust*/
-#define LCD_DRV_VERSION    "20240118"
+/* 20240129: update display mode management*/
+/* 20240218: optimize lcd config check sequence*/
+/* 20240222: update custom control support*/
+/* 20240226: add tcon init_table pre_proc*/
+/* 20240307: update swpdf support*/
+/* 20240318: optimize tcon reserved memory */
+/* 20240319: add tcon pre_proc_clk_en control*/
+#define LCD_DRV_VERSION    "20240319"
 
 extern unsigned long clk_util_clk_msr(unsigned long clk_mux);
 
@@ -110,11 +117,12 @@ char *lcd_type_type_to_str(int type);
 int lcd_mode_str_to_mode(const char *str);
 char *lcd_mode_mode_to_str(int mode);
 
-int lcd_config_check(struct aml_lcd_drv_s *pdrv);
+void lcd_encl_on(struct aml_lcd_drv_s *pdrv);
+int lcd_config_timing_check(struct aml_lcd_drv_s *pdrv, struct lcd_detail_timing_s *ptiming);
 int lcd_base_config_load_from_dts(char *dt_addr, struct aml_lcd_drv_s *pdrv);
 int lcd_base_config_load_from_bsp(struct aml_lcd_drv_s *pdrv);
-int lcd_get_config(char *dt_addr, int load_id, struct aml_lcd_drv_s *pdrv);
-void lcd_fr_range_update(struct lcd_detail_timing_s *ptiming);
+void lcd_panel_config_load_to_drv(struct aml_lcd_drv_s *pdrv);
+int lcd_get_panel_config(char *dt_addr, int load_id, struct aml_lcd_drv_s *pdrv);
 void lcd_clk_frame_rate_init(struct lcd_detail_timing_s *ptiming);
 void lcd_default_to_basic_timing_init_config(struct aml_lcd_drv_s *pdrv);
 void lcd_enc_timing_init_config(struct aml_lcd_drv_s *pdrv);
@@ -128,6 +136,19 @@ void lcd_mlvds_bit_rate_config(struct aml_lcd_drv_s *pdrv);
 void lcd_p2p_bit_rate_config(struct aml_lcd_drv_s *pdrv);
 void lcd_mipi_dsi_bit_rate_config(struct aml_lcd_drv_s *pdrv);
 void lcd_edp_bit_rate_config(struct aml_lcd_drv_s *pdrv);
+
+/* lcd cus_ctrl */
+void lcd_cus_ctrl_dump_raw_data(struct aml_lcd_drv_s *pdrv);
+void lcd_cus_ctrl_dump_info(struct aml_lcd_drv_s *pdrv);
+int lcd_cus_ctrl_load_from_dts(struct aml_lcd_drv_s *pdrv, struct device_node *child);
+int lcd_cus_ctrl_load_from_unifykey(struct aml_lcd_drv_s *pdrv, unsigned char *buf,
+		unsigned int max_size);
+void lcd_cus_ctrl_config_remove(struct aml_lcd_drv_s *pdrv);
+int lcd_cus_ctrl_config_update(struct aml_lcd_drv_s *pdrv, void *param, unsigned int mask_sel);
+void lcd_cus_ctrl_state_clear(struct aml_lcd_drv_s *pdrv, unsigned int mask_sel);
+int lcd_cus_ctrl_timing_is_valid(struct aml_lcd_drv_s *pdrv);
+int lcd_cus_ctrl_timing_is_activated(struct aml_lcd_drv_s *pdrv);
+struct lcd_detail_timing_s **lcd_cus_ctrl_timing_match_get(struct aml_lcd_drv_s *pdrv);
 
 /* lcd venc */
 void lcd_wait_vsync(struct aml_lcd_drv_s *pdrv);
@@ -188,10 +209,10 @@ void lcd_vbyone_hw_filter(struct aml_lcd_drv_s *pdrv, int flag);
 
 /* lcd tcon */
 #ifdef CONFIG_AML_LCD_TCON
-void lcd_tcon_info_print(void);
+void lcd_tcon_info_print(struct aml_lcd_drv_s *pdrv);
 int lcd_tcon_enable(struct aml_lcd_drv_s *pdrv);
 void lcd_tcon_disable(struct aml_lcd_drv_s *pdrv);
-int lcd_tcon_check(struct aml_lcd_drv_s *pdrv, char *ferr_str, char *warn_str);
+void lcd_tcon_dbg_check(struct aml_lcd_drv_s *pdrv, struct lcd_detail_timing_s *ptiming);
 int lcd_tcon_probe(char *dt_addr, struct aml_lcd_drv_s *pdrv, int load_id);
 #endif
 
@@ -214,32 +235,34 @@ void lcd_debug_probe(struct aml_lcd_drv_s *pdrv);
 #ifdef CONFIG_AML_LCD_TV
 int lcd_mode_tv_init(struct aml_lcd_drv_s *pdrv);
 #endif
+
 #ifdef CONFIG_AML_LCD_TABLET
 int lcd_mode_tablet_init(struct aml_lcd_drv_s *pdrv);
-
-/* @lcd_common.c */
+/* @dsi_common.c */
 void lcd_dsi_init_table_load_dts(char *dtaddr, int offset, struct dsi_config_s *dconf);
 void lcd_dsi_init_table_load_bsp(struct dsi_config_s *dconf);
 void lcd_dsi_tx_ctrl(struct aml_lcd_drv_s *pdrv, unsigned char en);
 unsigned long long lcd_dsi_get_min_bitrate(struct aml_lcd_drv_s *pdrv);
-/* @lcd_debug.c */
+/* @dsi_debug.c */
 void lcd_dsi_info_print(struct lcd_config_s *pconf);
 void lcd_dsi_set_operation_mode(struct aml_lcd_drv_s *pdrv, unsigned char op_mode);
 void lcd_dsi_write_cmd(struct aml_lcd_drv_s *pdrv, unsigned char *payload);
 unsigned char lcd_dsi_read(struct aml_lcd_drv_s *pdrv,
 			unsigned char *payload, unsigned char *rd_data, unsigned char rd_byte_len);
-/* @lcd_addons/dsi_check_panel.c */
+/* @dsi_addons/dsi_check_panel.c */
 int mipi_dsi_check_state(struct aml_lcd_drv_s *pdrv, unsigned char reg, unsigned char cnt);
 
+/* @lcd_eDP.c */
 void dptx_DPCD_dump(struct aml_lcd_drv_s *pdrv);
 int eDP_debug_test(struct aml_lcd_drv_s *pdrv, char *str, int num);
 void edp_tx_ctrl(struct aml_lcd_drv_s *pdrv, int flag);
 #endif
+
 void lcd_wait_vsync(struct aml_lcd_drv_s *pdrv);
 
 /* aml_bl driver */
-int aml_bl_probe(char *dtaddr, int load_id);
-int aml_bl_remove(void);
+void aml_bl_probe_single(unsigned char index, int load_id);
+void aml_bl_remove_all(void);
 int aml_bl_index_add(int drv_index, int conf_index);
 int aml_bl_index_remove(int drv_index);
 int aml_bl_init(void);

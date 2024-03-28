@@ -16,6 +16,7 @@
 #include <amlogic/aml_rollback.h>
 #include <part.h>
 #include <cli.h>
+#include <emmc_partitions.h>
 
 #if defined(CONFIG_EFUSE_OBJ_API) && defined(CONFIG_CMD_EFUSE)
 extern efuse_obj_field_t efuse_field;
@@ -33,6 +34,7 @@ typedef boot_img_hdr_t boot_img_hdr;
 
 #define BOOTLOADER_OFFSET		512
 #define BOOTLOADER_MAX_SIZE		(4 * 1024 * 1024)
+#define MIB_SIZE                (1024 * 1024)
 
 //check SWPL-31296 for details
 static int do_get_bootloader_status(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -497,7 +499,7 @@ static int update_gpt(int flag)
 				goto exit;
 			} else if (erase_flag == 0) {
 				printf("partition doesn't change, needn't update\n");
-				ret = 0;
+				ret = -1;
 				goto exit;
 			}
 
@@ -562,12 +564,10 @@ exit:
 	if (buffer)
 		free(buffer);
 
+	if (mmc)
+		run_command("mmc dev 1 0;", 0);
+
 	if (mmc && ret > 0) {
-		dev_desc = blk_get_dev("mmc", 1);
-		if (dev_desc && dev_desc->type != DEV_TYPE_UNKNOWN) {
-			printf("valid mmc device, erase gpt\n");
-			erase_gpt_part_table(dev_desc);
-		}
 		if (ret == 1 || ret == 2 || ret == 3) {
 			printf("rollback\n");
 			update_rollback();
@@ -579,6 +579,72 @@ exit:
 	}
 #endif
 	return ret;
+}
+
+int recovery_update(void)
+{
+#ifdef CONFIG_MMC_MESON_GX
+	char bufcmd[64];
+	unsigned long long size = 0;
+	char *recovery_need_update = NULL;
+	struct partitions *partition = NULL;
+	//"ANDROID!"
+	const unsigned char imghead[] = { 0x41, 0x4e, 0x44, 0x52, 0x4f, 0x49, 0x44, 0x21 };
+
+	if (store_get_type() != BOOT_EMMC)
+		return 0;
+
+	//check recoverybak partition exist
+	partition = find_mmc_partition_by_name("recoverybak");
+	if (!partition) {
+		printf("can not find recoverybak, skip\n");
+		return 0;
+	}
+
+	//check if need update recovery from recoverybak
+	recovery_need_update = env_get("recovery_need_update");
+	if (!recovery_need_update || strcmp(recovery_need_update, "1"))
+		return 0;
+
+	//read recoverybak header data for check
+	sprintf(bufcmd, "store read $loadaddr recoverybak 0 0x%x", 16);
+	run_command(bufcmd, 0);
+
+	unsigned char *loadaddr = (unsigned char *)simple_strtoul(env_get("loadaddr"), NULL, 16);
+
+	//check recoverybak head is start "ANDROID!"
+	if (memcmp((void *)imghead, loadaddr, 8)) {
+		printf("not valid recovery image, skip update recovery\n");
+		return 0;
+	}
+
+	//write recoverybak data to recovery
+	while (size < partition->size) {
+		unsigned long long write_size = 0;
+		unsigned long long left_size = partition->size - size;
+
+		if (left_size > 10 * MIB_SIZE)
+			write_size = 10 * MIB_SIZE;
+		else
+			write_size = partition->size - size;
+
+		sprintf(bufcmd, "store read $loadaddr recoverybak 0x%llx 0x%llx", size, write_size);
+		run_command(bufcmd, 0);
+		sprintf(bufcmd, "store write $loadaddr recovery 0x%llx 0x%llx", size, write_size);
+		run_command(bufcmd, 0);
+		size += write_size;
+	}
+
+	//clean recovery_need_update to 0
+	env_set("recovery_need_update", "0");
+#if CONFIG_IS_ENABLED(AML_UPDATE_ENV)
+	run_command("update_env_part -p recovery_need_update;", 0);
+#else
+	run_command("saveenv", 0);
+#endif
+
+#endif
+	return 0;
 }
 
 static int do_secureboot_check(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[]) {
@@ -600,8 +666,7 @@ static int do_secureboot_check(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 	if (store_get_type() == BOOT_EMMC)
 		mmc = find_mmc_device(1);
 #endif
-	//unsupport update dt in boothal, update dt in uboot
-	run_command("update_dt;", 0);
+	recovery_update();
 
 	bootloader_wp();
 
@@ -793,10 +858,11 @@ static int do_secureboot_check(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 	//get boot status
 	run_command("amlbootsta -p -s", 0);
 
-	//get forUpgrade_robustOta and check if support robustota
-	robustota = env_get("forUpgrade_robustOta");
-	if ((robustota == NULL) || !strcmp(robustota, "false")) {
-		return -1;
+	if (has_boot_slot == 0) {
+		//get forUpgrade_robustOta and check if support robustota
+		robustota = env_get("forUpgrade_robustOta");
+		if (!robustota || !strcmp(robustota, "false"))
+			return -1;
 	}
 
 	//get bootloader index
@@ -804,6 +870,12 @@ static int do_secureboot_check(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 	if (bootloaderindex == NULL) {
 		wrnP("can not get bootloader index, so skip secure check\n");
 		return -1;
+	}
+
+	//unsupport update dt in boothal, update dt in uboot
+	if (gpt_flag != 0 && !strcmp(rebootstatus, "reboot_next")) {
+		printf("dts partition table mode, check partition changes\n");
+		run_command("update_dt;", 0);
 	}
 
 	char *update_dts_gpt = NULL;
@@ -835,11 +907,17 @@ static int do_secureboot_check(cmd_tbl_t *cmdtp, int flag, int argc, char * cons
 				printf("update gpt\n");
 				update_flag = update_gpt(0);
 				env_set("update_gpt", "0");
+				strcpy(write_boot, "0");
+				env_set("write_boot", "0");
 #if CONFIG_IS_ENABLED(AML_UPDATE_ENV)
 				run_command("update_env_part -p update_gpt;", 0);
+				run_command("update_env_part -p write_boot;", 0);
 #else
 				run_command("saveenv", 0);
 #endif
+
+				if (update_flag != -1)
+					run_command("reset", 0);
 			}
 		}
 	}

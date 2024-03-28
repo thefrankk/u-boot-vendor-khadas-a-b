@@ -7,6 +7,7 @@
 #include <common.h>
 #include <image.h>
 #include <linux/libfdt.h>
+#include <linux/compat.h>
 #include <android_image.h>
 #if defined(CONFIG_ZIRCON_BOOT_IMAGE)
 #include <zircon/image.h>
@@ -35,6 +36,10 @@ int __attribute__((weak)) store_logic_read(const char *name, loff_t off, size_t 
 #define IMG_PRELOAD_SZ  (1U<<20) //Total read 1M at first to read the image header
 #define PIC_PRELOAD_SZ  (8U<<10) //Total read 4k at first to read the image header
 #define RES_OLD_FMT_READ_SZ (8U<<20)
+
+#define MAX_RAMDISK_SIZE	SZ_64M
+#define MAX_KERNEL_SIZE		SZ_64M
+#define MAX_DTB_SIZE		SZ_16M
 
 typedef struct __aml_enc_blk{
         unsigned int  nOffset;
@@ -217,7 +222,7 @@ static int do_image_read_dtb_from_knl(const char *partname,
 	unsigned int nflashloadlen = 0;
 	u64 lflashreadoff = 0;
 	const int preloadsz = 4096 * 2;
-	int pagesz = 0;
+	unsigned int pagesz = 0;
 	boot_img_hdr_t *hdr_addr = (boot_img_hdr_t *)loadaddr;
 	char *upgrade_step_s = NULL;
 	bool cache_flag = false;
@@ -271,6 +276,8 @@ static int do_image_read_dtb_from_knl(const char *partname,
 		const int preloadsz_r = preloadsz;
 		int rc_r = 0;
 		char *slot_name;
+		u64 rc_vendor_boot;
+		char *flag = env_get("normal_to_virtual");
 
 		slot_name = env_get("slot-suffixes");
 		if (strcmp(slot_name, "0") == 0)
@@ -279,6 +286,17 @@ static int do_image_read_dtb_from_knl(const char *partname,
 			strcpy((char *)partname, "vendor_boot_b");
 		else
 			strcpy((char *)partname, "vendor_boot");
+
+		rc_vendor_boot = store_part_size(partname);
+		if (flag && (strcmp(flag, "1") == 0) && rc_vendor_boot == -1) {
+			printf("update from Q to S, check part exist\n");
+			if (slot_name && (strcmp(slot_name, "0") == 0))
+				strcpy((char *)partname, "recovery_a");
+			else if (slot_name && strcmp(slot_name, "1") == 0)
+				strcpy((char *)partname, "recovery_b");
+			else
+				strcpy((char *)partname, "recovery");
+		}
 
 		MsgP("partname = %s\n", partname);
 		nflashloadlen = preloadsz_r;//head info is one page size == 4k
@@ -348,8 +366,16 @@ static int do_image_read_dtb_from_knl(const char *partname,
 
 	debugP("lflashreadoff=0x%llx, nflashloadlen=0x%x\n", lflashreadoff, nflashloadlen);
 	debugP("page sz %u\n", hdr_addr->page_size);
-	if (!nflashloadlen) {
-		errorP("NO second part in kernel image\n");
+	if (pagesz > PAGE_SIZE) {
+		errorP("Wrong pagesz:%d\n", pagesz);
+		return __LINE__;
+	}
+	if (!nflashloadlen || nflashloadlen > MAX_DTB_SIZE) {
+		errorP("Wrong nflashloadlen:%d\n", nflashloadlen);
+		return __LINE__;
+	}
+	if (lflashreadoff > (MAX_RAMDISK_SIZE + MAX_KERNEL_SIZE)) {
+		errorP("Wrong lflashreadoff:%lld\n", lflashreadoff);
 		return __LINE__;
 	}
 	unsigned char *secondaddr = (unsigned char *)loadaddr + lflashreadoff;
@@ -548,6 +574,11 @@ static int do_image_read_dtb(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
         return CMD_RET_FAILURE;
     }
     const unsigned fdtsz    = fdt_totalsize((char*)fdtAddr);
+
+    if (fdtsz >= SZ_1M) {
+        errorP("bad fdt size:%d\n", fdtsz);
+        return CMD_RET_FAILURE;
+    }
     memmove(loadaddr, (char*)fdtAddr, fdtsz);
 
     return iRet;
@@ -676,6 +707,20 @@ static int do_image_read_kernel(cmd_tbl_t *cmdtp, int flag, int argc, char * con
             debugP("kernel_size 0x%x, page_size 0x%x, totalSz 0x%x\n", hdr_addr->kernel_size, hdr_addr->page_size, kernel_size);
             debugP("ramdisk_size 0x%x, totalSz 0x%x\n", hdr_addr->ramdisk_size, ramdisk_size);
 			debugP("dtbSz 0x%x, Total actualbootimgsz 0x%x\n", dtbsz, actualbootimgsz);
+			if (kernel_size > MAX_KERNEL_SIZE) {
+				errorP("kernel size limit 0x%x,0x%x\n", kernel_size,
+						MAX_KERNEL_SIZE);
+				return __LINE__;
+			}
+			if (ramdisk_size > MAX_RAMDISK_SIZE) {
+				errorP("ramdisk size limit 0x%x,0x%x\n", ramdisk_size,
+						MAX_RAMDISK_SIZE);
+				return __LINE__;
+			}
+			if (dtbsz > MAX_DTB_SIZE) {
+				errorP("dtb size limit 0x%x,0x%x\n", dtbsz, MAX_DTB_SIZE);
+				return __LINE__;
+			}
         }
 
 #if defined(CONFIG_ZIRCON_BOOT_IMAGE)
@@ -775,6 +820,14 @@ static int do_image_read_kernel(cmd_tbl_t *cmdtp, int flag, int argc, char * con
 		MsgP("ramdisk_size 0x%x, totalSz 0x%x\n",
 			hdr_addr_v3->ramdisk_size, ramdisk_size);
 		MsgP("boot header_version = %d\n", hdr_addr_v3->header_version);
+		if (kernel_size > MAX_KERNEL_SIZE) {
+			errorP("kernel size limit 0x%x,0x%x\n", kernel_size, MAX_KERNEL_SIZE);
+			return __LINE__;
+		}
+		if (ramdisk_size > MAX_RAMDISK_SIZE) {
+			errorP("ramdisk size limit 0x%x,0x%x\n", ramdisk_size, MAX_RAMDISK_SIZE);
+			return __LINE__;
+		}
 		if (securekernelimgsz) {
 			actualbootimgsz = securekernelimgsz;
 			MsgP("securekernelimgsz=0x%x\n", actualbootimgsz);
@@ -1134,6 +1187,7 @@ typedef struct {
 #pragma pack(pop)
 
 #define LOGO_OLD_FMT_READ_SZ (8U<<20)//if logo format old, read 8M
+#define LOGO_TOTAL_ITEM		(16)
 
 static int img_res_check_log_header(const AmlResImgHead_t* pResImgHead)
 {
@@ -1148,6 +1202,12 @@ static int img_res_check_log_header(const AmlResImgHead_t* pResImgHead)
         errorP("res version 0x%x != 0x%x\n", pResImgHead->version, AML_RES_IMG_VERSION_V2);
         return 2;
     }
+
+	if (pResImgHead->imgItemNum > LOGO_TOTAL_ITEM) {
+		errorP("logo size err 0x%x != 0x%x\n", pResImgHead->imgItemNum,
+				LOGO_TOTAL_ITEM);
+		return 3;
+	}
 
     return 0;
 }
@@ -1290,13 +1350,23 @@ static int do_image_read_pic(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
                     errorP("item magic 0x%x != 0x%x\n", pItem->magic, IH_MAGIC);
                     return __LINE__;
             }
+		if (pItem->start > CONFIG_MAX_PIC_LEN) {
+			errorP("item data offset err 0x%x != 0x%x\n", pItem->start,
+					CONFIG_MAX_PIC_LEN);
+			return __LINE__;
+		}
+		if (pItem->size > CONFIG_MAX_PIC_LEN) {
+			errorP("item data size err 0x%x != 0x%x\n", pItem->size,
+					CONFIG_MAX_PIC_LEN);
+			return __LINE__;
+		}
             if (!strcmp(picName, pItem->name) || !strcmp(argv[2], pItem->name))
             {
                     char env_name[IH_NMLEN*2];
                     char env_data[IH_NMLEN*2];
                     unsigned long picLoadAddr = (unsigned long)loadaddr + (unsigned)pItem->start;
-			int         itemSz      = pItem->size;
-			unsigned long uncompSz    = 0;
+			unsigned int	itemSz      = pItem->size;
+			unsigned long	uncompSz    = 0;
 
                     if (pItem->start + itemSz > flashReadOff)
                     {
@@ -1314,13 +1384,14 @@ static int do_image_read_pic(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
                     unsigned long uncompLoadaddr = picLoadAddr + itemSz + 7;
                     uncompLoadaddr &= ~(0x7U);
 			rc = imgread_uncomp_pic((unsigned char *)picLoadAddr, itemSz,
-				(unsigned char *)uncompLoadaddr, CONFIG_MAX_PIC_LEN, &uncompSz);
+					(unsigned char *)uncompLoadaddr, CONFIG_MAX_PIC_LEN,
+						&uncompSz);
                     if (rc) {
                         errorP("Fail in uncomp pic,rc[%d]\n", rc);
                         return __LINE__;
                     }
 			if (uncompSz) {
-				itemSz      = (int)uncompSz;
+				itemSz      = uncompSz;
                         picLoadAddr = uncompLoadaddr;
                     }
 
