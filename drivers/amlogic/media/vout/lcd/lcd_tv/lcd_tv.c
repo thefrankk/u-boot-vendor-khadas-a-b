@@ -368,11 +368,11 @@ static void lcd_vmode_update(struct aml_lcd_drv_s *pdrv)
 		memcpy(&pdrv->config.timing.base_timing, ptiming,
 			sizeof(struct lcd_detail_timing_s));
 		lcd_cus_ctrl_config_update(pdrv, (void *)ptiming, LCD_CUS_CTRL_SEL_TIMMING);
-		if (pdrv->config.timing.base_timing.pixel_clk != pre_pclk)
-			pdrv->config.timing.clk_change |= LCD_CLK_PLL_RESET;
 
 		//update base_timing to act_timing
 		lcd_enc_timing_init_config(pdrv);
+		if (pdrv->config.timing.base_timing.pixel_clk != pre_pclk)
+			pdrv->config.timing.clk_change |= LCD_CLK_PLL_RESET;
 	}
 
 	if (!pdrv->vmode_mgr.cur_vmode_info || !pdrv->std_duration) {
@@ -418,9 +418,16 @@ static int lcd_config_valid(struct aml_lcd_drv_s *pdrv, char *mode)
 
 static void lcd_config_init(struct aml_lcd_drv_s *pdrv)
 {
+	char *mode_str;
+
 	lcd_enc_timing_init_config(pdrv);
-	lcd_output_vmode_init(pdrv);
 	pdrv->config.timing.clk_change = 0; /* clear clk_change flag */
+
+	lcd_output_vmode_init(pdrv);
+	//assign default outputmode for multi timing
+	mode_str = env_get("outputmode");
+	if (mode_str)
+		lcd_config_valid(pdrv, mode_str);
 }
 
 int lcd_mode_tv_init(struct aml_lcd_drv_s *pdrv)

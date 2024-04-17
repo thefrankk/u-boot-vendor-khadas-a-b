@@ -418,20 +418,12 @@ const struct mtd_partition *get_spinand_partition_table(int *partitions)
 int checkhw(char *name)
 {
 	char loc_name[64] = {0};
-	unsigned long ddr_size = 0;
-	int i;
 	cpu_id_t cpu_id = get_cpu_id();
 
-	for (i = 0; i < CONFIG_NR_DRAM_BANKS; i++) {
-		ddr_size += gd->bd->bi_dram[i].size;
-		//
-	}
-#if defined(CONFIG_SYS_MEM_TOP_HIDE)
-	ddr_size += CONFIG_SYS_MEM_TOP_HIDE;
-#endif
-
 #if 0
+	unsigned long ddr_size = (readl(SYSCTRL_SEC_STATUS_REG4) & ~0xfffffUL) << 4;
 	int sipinfo = ((((readl(SYSCTRL_SEC_STATUS_REG4)) & 0xFFFF0000) >> 19) & 0x1);
+
 	if ((sipinfo == 1) && (ddr_size == 0x80000000)) // sip package
 	{
 		strcpy(loc_name, "t3x_t968d4_bc303-2g\0");
@@ -449,7 +441,7 @@ int checkhw(char *name)
 			else if (cpu_id.chip_rev == 0xB)
 				strcpy(loc_name, "t3x_t968d4_bc302-3g\0");
 			break;
-		case 0xe0000000:
+		case 0x100000000:
 			if (cpu_id.chip_rev == 0xA)
 				strcpy(loc_name, "t3x-reva_t968d4_bc302\0");
 			else if (cpu_id.chip_rev == 0xB) {

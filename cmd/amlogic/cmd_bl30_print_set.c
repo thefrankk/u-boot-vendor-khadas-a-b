@@ -16,6 +16,7 @@
  */
 static int do_bl30_print_set(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
+#ifdef CMD_SET_BL30_PRINT
 	uint32_t ret, enable, bl30_print_flag;
 
 	if (argc <= 1) {
@@ -43,6 +44,10 @@ static int do_bl30_print_set(cmd_tbl_t *cmdtp, int flag, int argc, char * const 
 		else
 			printf("disable bl30 log print\n");
 	}
+
+#else
+	printf("bl30 log print set failed: not supported\n");
+#endif
 
 	return 0;
 }

@@ -2447,6 +2447,11 @@ static int handle_panel_misc(struct panel_misc_s *p_misc)
 		sprintf(p_misc->version, "V%03d", tmp_val);
 	}
 
+	tmp_val = env_get_ulong("model_outputmode_bypass", 10, 0);
+	if (tmp_val) {
+		ALOGI("model_outputmode_bypass\n");
+		goto handle_panel_misc_next;
+	}
 	ini_value = IniGetString("panel_misc", "outputmode2", "null");
 	if (model_debug_flag & DEBUG_MISC)
 		ALOGD("%s, outputmode2 is (%s)\n", __func__, ini_value);
@@ -2468,6 +2473,12 @@ static int handle_panel_misc(struct panel_misc_s *p_misc)
 		run_command(buf, 0);
 	}
 
+handle_panel_misc_next:
+	tmp_val = env_get_ulong("model_connector_bypass", 10, 0);
+	if (tmp_val) {
+		ALOGI("model_connector_bypass\n");
+		goto handle_panel_misc_next2;
+	}
 	ini_value = IniGetString("panel_misc", "connector_type", "null");
 	if (model_debug_flag & DEBUG_MISC)
 		ALOGD("%s, connector_type is (%s)\n", __func__, ini_value);
@@ -2481,6 +2492,7 @@ static int handle_panel_misc(struct panel_misc_s *p_misc)
 		run_command("setenv connector_type null", 0);
 	}
 
+handle_panel_misc_next2:
 	rev_ctrl = env_get("reverse_ctrl");
 	if (!rev_ctrl || strcmp(rev_ctrl, "0") == 0) {
 		ini_value = IniGetString("panel_misc", "panel_reverse", "null");
@@ -2894,6 +2906,15 @@ static int handle_lcd_optical_attr(struct lcd_optical_attr_s *p_attr)
 {
 	const char *ini_value = NULL;
 
+	ini_value = IniGetString("lcd_optical_Attr", "version", "null");
+	if (model_debug_flag & DEBUG_LCD_OPTICAL)
+		ALOGD("%s, version is (%s)\n", __func__, ini_value);
+	if (strcmp(ini_value, "null") == 0) {
+		glcd_optical_dcnt = 0;
+		return -1;
+	}
+	p_attr->head.version = strtoul(ini_value, NULL, 0);
+
 	ini_value = IniGetString("lcd_optical_Attr", "hdr_support", "0");
 	if (model_debug_flag & DEBUG_LCD_OPTICAL)
 		ALOGD("%s, hdr_support is (%s)\n", __func__, ini_value);
@@ -2974,7 +2995,6 @@ static int handle_lcd_optical_attr(struct lcd_optical_attr_s *p_attr)
 
 static int handle_lcd_optical_header(struct lcd_optical_attr_s *p_attr)
 {
-	const char *ini_value = NULL;
 	unsigned char *tmp_buf = NULL;
 
 	glcd_optical_dcnt = sizeof(struct lcd_optical_attr_s);
@@ -2987,14 +3007,6 @@ static int handle_lcd_optical_header(struct lcd_optical_attr_s *p_attr)
 	memset((void *)tmp_buf, 0, glcd_optical_dcnt);
 
 	p_attr->head.data_len = glcd_optical_dcnt;
-
-	ini_value = IniGetString("lcd_optical_Attr", "version", "null");
-	if (model_debug_flag & DEBUG_LCD_OPTICAL)
-		ALOGD("%s, version is (%s)\n", __func__, ini_value);
-	if (strcmp(ini_value, "null") == 0)
-		p_attr->head.version = 0;
-	else
-		p_attr->head.version = strtoul(ini_value, NULL, 0);
 
 	p_attr->head.block_next_flag = 0;
 	p_attr->head.block_cur_size = glcd_optical_dcnt;
@@ -3023,6 +3035,7 @@ static int parse_panel_ini(const char *file_name, unsigned char *lcd_buf,
 	struct lcd_v2_attr_s *lcd_v2_attr;
 	unsigned short lcd_size = 0;
 	struct lcd_header_s *header;
+	int ret;
 
 	IniParserInit();
 
@@ -3140,8 +3153,9 @@ static int parse_panel_ini(const char *file_name, unsigned char *lcd_buf,
 #endif
 
 	// handle lcd optical attr
-	handle_lcd_optical_attr(optical_attr);
-	handle_lcd_optical_header(optical_attr);
+	ret = handle_lcd_optical_attr(optical_attr);
+	if (ret == 0)
+		handle_lcd_optical_header(optical_attr);
 
 	IniParserUninit();
 
