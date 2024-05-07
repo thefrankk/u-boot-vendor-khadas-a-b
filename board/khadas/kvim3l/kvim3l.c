@@ -683,6 +683,7 @@ static int check_forcebootsd(void)
 int board_init(void)
 {
 	sys_led_init();
+	run_command("gpio s gpioao_6", 1);
     //Please keep CONFIG_AML_V2_FACTORY_BURN at first place of board_init
     //As NOT NEED other board init If USB BOOT MODE
 #ifdef CONFIG_AML_V2_FACTORY_BURN
