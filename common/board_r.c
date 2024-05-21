@@ -108,6 +108,10 @@ static int initr_reloc(void)
 static int initr_caches(void)
 {
 	/* Enable caches */
+#if defined(CONFIG_USEMMU_BOARDF) && defined(CONFIG_ARMV8_MULTIENTRY)
+	dcache_disable();
+#endif
+
 	enable_caches();
 	return 0;
 }
