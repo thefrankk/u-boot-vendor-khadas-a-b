@@ -776,7 +776,8 @@ void rx_set_phy_rterm(void)
 	extern int64_t meson_trustzone_efuse_caliItem(const char *str);
 	rterm_val_20 = meson_trustzone_efuse_caliItem("hdmirx");
 	rterm_val_21 = meson_trustzone_efuse_caliItem("hdmirx21");
-	if (rterm_val_20) {
+	/* if not trimed,meson_trustzone_efuse_caliItem return -1 */
+	if (rterm_val_20 >= 0) {
 		data32 = hdmirx_rd_amlphy(T3X_HDMIRX20PHY_DCHA_MISC1, E_PORT0);
 		data32 &= (~(0xf << 12));
 		/* rterm val */
@@ -789,7 +790,7 @@ void rx_set_phy_rterm(void)
 	} else {
 		printf("no 20 trim val!\n");
 	}
-	if (rterm_val_21) {
+	if (rterm_val_21 >= 0) {
 		data32 = hdmirx_rd_amlphy(T3X_HDMIRX21PHY_MISC2, E_PORT2);
 		data32 &= (~0xf);
 		/* rterm flag */
