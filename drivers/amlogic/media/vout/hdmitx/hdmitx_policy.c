@@ -40,7 +40,6 @@
 #define MODE_720P                       "720p60hz"
 #define MODE_720P100HZ                  "1280x720p100hz"
 #define MODE_720P120HZ                  "1280x720p120hz"
-#define MODE_768P                       "768p60hz"
 #define MODE_1080P24HZ                  "1080p24hz"
 #define MODE_1080P25HZ                  "1080p25hz"
 #define MODE_1080P30HZ                  "1080p30hz"
@@ -71,6 +70,8 @@
 #define MODE_8K4K48HZ                   "7680x4320p48hz"
 #define MODE_8K4K50HZ                   "7680x4320p50hz"
 #define MODE_8K4K60HZ                   "7680x4320p60hz"
+#define MODE_1024x600p                  "1024x600p60hz"
+#define MODE_800x480p                   "800x480p60hz"
 #define MODE_PANEL                      "panel"
 #define MODE_PAL_M                      "pal_m"
 #define MODE_PAL_N                      "pal_n"
@@ -131,7 +132,9 @@ static const char *DISPLAY_MODE_LIST[] = {
 	MODE_8K4K30HZ,
 	MODE_8K4K48HZ,
 	MODE_8K4K50HZ,
-	MODE_8K4K60HZ
+	MODE_8K4K60HZ,
+	MODE_800x480p,
+	MODE_1024x600p
 	/* MODE_768P,  */
 	/* MODE_PANEL, */
 	/* MODE_PAL_M, */
@@ -186,7 +189,9 @@ static const char *MODE_RESOLUTION_FIRST[] = {
 	MODE_8K4K30HZ,
 	MODE_8K4K48HZ,
 	MODE_8K4K50HZ,
-	MODE_8K4K60HZ
+	MODE_8K4K60HZ,
+	MODE_800x480p,
+	MODE_1024x600p
 };
 
 /* ascending order */
@@ -208,7 +213,9 @@ static const char *MODE_FRAMERATE_FIRST[] = {
 	MODE_4K2K50HZ,
 	MODE_4K2K60HZ,
 	MODE_8K4K50HZ,
-	MODE_8K4K60HZ
+	MODE_8K4K60HZ,
+	MODE_800x480p,
+	MODE_1024x600p
 };
 
 /* this is prior selected list for sdr of
@@ -832,8 +839,9 @@ static void get_highest_hdmimode(struct input_hdmi_data *hdmi_data, char *mode)
 	for (i = 0; disp_mode_t[i]; i++) {
 		memset(mode_tmp, 0, sizeof(mode_tmp));
 		strncpy(mode_tmp, disp_mode_t[i], MODE_LEN - 1);
-		if (!hdmi_sink_disp_mode_sup(hdmi_data, mode_tmp))
+		if (!hdmi_sink_disp_mode_sup(hdmi_data, mode_tmp)) {
 			continue;
+		}
 		if (resolve_resolution_value(mode_tmp, FRAMERATE_PRIORITY) >
 		    resolve_resolution_value(value, FRAMERATE_PRIORITY)) {
 			memset(value, 0, MODE_LEN);

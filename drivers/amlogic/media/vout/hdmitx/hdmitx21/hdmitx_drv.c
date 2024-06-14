@@ -149,6 +149,8 @@ static struct hdmi_support_mode gxbb_modes[] = {
 	{HDMI_3_720x480p60_16x9, "480p60hz", 0},
 	{HDMI_22_720x576i50_16x9, "576i50hz", 0},
 	{HDMI_7_720x480i60_16x9, "480i60hz", 0},
+	{HDMIV_1024x600p60hz, "1024x600p60hz", 0},
+	{HDMIV_800x480p60hz, "800x480p60hz", 0},
 };
 
 static void hdmitx_list_support_modes(void)
@@ -1261,7 +1263,11 @@ static void config_hdmi21_tx(struct hdmitx_dev *hdev)
 	hdmitx21_wr_reg(SOC_FUNC_SEL_IVCTX, 0x01);
 	//hdmitx21_wr_reg(SYS_MISC_IVCTX, 0x00); config same with default
 	//hdmitx21_wr_reg(DIPT_CNTL_IVCTX, 0x06); config same with default
-	hdmitx21_wr_reg(TEST_TXCTRL_IVCTX, 0x02); //[1] enable hdmi
+	//hdmitx21_wr_reg(TEST_TXCTRL_IVCTX, 0x02); //[1] enable hdmi
+	if (hdev->RXCap.IEEEOUI == HDMI_IEEEOUI)
+		hdmitx21_wr_reg(TEST_TXCTRL_IVCTX, 0x02); //[1] enable hdmi
+	else
+		hdmitx21_wr_reg(TEST_TXCTRL_IVCTX, 0x00); //[0] enable dvi
 	//hdmitx21_wr_reg(TX_ZONE_CTL4_IVCTX, 0x04); config same with default
 	hdmitx21_wr_reg(CLKRATIO_IVCTX, 0x8a);
 
@@ -1435,7 +1441,11 @@ static void config_hdmi21_tx(struct hdmitx_dev *hdev)
 	hdmitx21_wr_reg(HDMITX_TOP_HV_ACTIVE, data32);
 	hdmitx21_set_reg_bits(PWD_SRST_IVCTX, 3, 1, 2);
 	hdmitx21_set_reg_bits(PWD_SRST_IVCTX, 0, 1, 2);
-	hdmitx21_set_reg_bits(TPI_SC_IVCTX, 1, 0, 1);
+	//hdmitx21_set_reg_bits(TPI_SC_IVCTX, 1, 0, 1);
+	if (hdev->RXCap.IEEEOUI == HDMI_IEEEOUI)
+		hdmitx21_set_reg_bits(TPI_SC_IVCTX, 1, 0, 1);
+	else
+		hdmitx21_set_reg_bits(TPI_SC_IVCTX, 0, 0, 1);
 } /* config_hdmi21_tx */
 
 #define GET_LOW8BIT(a)	((a) & 0xff)
