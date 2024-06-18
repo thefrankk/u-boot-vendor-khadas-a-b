@@ -163,7 +163,7 @@
 		"lcd_ctrl=${lcd_ctrl} lcd_debug=${lcd_debug} "\
 		"outputmode=${outputmode} outputmode2=${outputmode2} "\
 		"vout=${outputmode},enable vout2=${outputmode2},enable "\
-		"connector0_type=${connector0_type} connector1_type=${connector1_type} "\
+		"connector0_type=${connector0_type} connector1_type=${connector1_type}; "\
 		"run cmdline_keys;"\
 		"\0"\
 	"cec_init="\
