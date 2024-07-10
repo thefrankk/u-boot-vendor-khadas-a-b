@@ -245,17 +245,14 @@ function clean() {
 	echo "Clean up"
 	if [ -e ${BL33_PATH1} ]; then
 		cd ${MAIN_FOLDER}
-		cd ${BL33_PATH1}
 		make distclean
 	fi
 	if [ -e ${BL33_PATH2} ]; then
 		cd ${MAIN_FOLDER}
-		cd ${BL33_PATH2}
 		make distclean
 	fi
 	if [ -e ${BL33_PATH3} ]; then
 		cd ${MAIN_FOLDER}
-		cd ${BL33_PATH3}
 		make distclean
 	fi
 	cd ${MAIN_FOLDER}

@@ -2,7 +2,7 @@
 BL33_BIN_SIZE="1572864"
 if [[ $1 =~ "sc2" ]];
 then
-PROJECT=`cat ./bl33/v2019/board/amlogic/defconfigs/$1_defconfig | grep 'CONFIG_CHIPSET_NAME' | awk -F '=' '{print $2}' `
+PROJECT=`cat ./board/amlogic/defconfigs/$1_defconfig | grep 'CONFIG_CHIPSET_NAME' | awk -F '=' '{print $2}' `
 PRJ=`echo $PROJECT | tr -d "\""`
 echo $PRJ
 export PRJ
@@ -19,7 +19,7 @@ then
 	echo "Start to build Uboot";
 		if [ ! -f "dv_scs_keys/root/rsa/$PRJ/roothash/hash-device-rootcert.bin"  ];
 		then	echo "generate dfu keys";
-			./fip/sc2/generate-device-keys/gen_all_device_key.sh --key-dir ./dv_scs_keys --rsa-size 4096 --project $PRJ --rootkey-index 0 --template-dir ./soc/templates/sc2/ --out-dir ./bl33/v2019/board/amlogic/$1/device-keys
+			./fip/sc2/generate-device-keys/gen_all_device_key.sh --key-dir ./dv_scs_keys --rsa-size 4096 --project $PRJ --rootkey-index 0 --template-dir ./soc/templates/sc2/ --out-dir ./board/amlogic/$1/device-keys
 			./fip/sc2/nocs/createtemplate.sh $1
 			./fip/sc2/generate-device-keys/bin/dvuk_gen.sh fip/sc2/nocs/dvuk
 			mkdir -p ./fip/sc2/nocs/efuse/input
@@ -57,8 +57,8 @@ then
 		scssg="DEVICE_SCS_SEGID=0x$c4$c3$c2$c1"
 		echo $vendsg
 		echo $scssg
-		sed -i 's/DEVICE_VENDOR_SEGID.*/'$vendsg'/' bl33/v2019/board/amlogic/$1/fw_arb.cfg
-		sed -i 's/DEVICE_SCS_SEGID.*/'$scssg'/' bl33/v2019/board/amlogic/$1/fw_arb.cfg
+		sed -i 's/DEVICE_VENDOR_SEGID.*/'$vendsg'/' board/amlogic/$1/fw_arb.cfg
+		sed -i 's/DEVICE_SCS_SEGID.*/'$scssg'/' board/amlogic/$1/fw_arb.cfg
 		mkdir -p ./fip/sc2/nocs/efuse/input/
 		mkdir -p ./fip/sc2/nocs/efuse/output/
 		./fip/sc2/bin/efuse-gen.sh --device-vendor-segid 0x$c4$c3$c2$c1 -o ./fip/sc2/nocs/efuse/input/device-vendor.efuse
@@ -66,7 +66,7 @@ then
 	cd ./fip/sc2/nocs
 	./package-uboot.sh usb
 	cd -
-	./fip/sc2/bin/device-vendor-scs-signing.sh --key-dir bl33/v2019/board/amlogic/$1/device-keys/ --project $PRJ --input-dir ./fip/sc2/nocs/usb/ --rootkey-index 0 --chipset-variant nocs-prod --arb-config ./bl33/v2019/board/amlogic/$1/fw_arb.cfg --out-dir ./fip/sc2/nocs/usb/
+	./fip/sc2/bin/device-vendor-scs-signing.sh --key-dir board/amlogic/$1/device-keys/ --project $PRJ --input-dir ./fip/sc2/nocs/usb/ --rootkey-index 0 --chipset-variant nocs-prod --arb-config ./board/amlogic/$1/fw_arb.cfg --out-dir ./fip/sc2/nocs/usb/
 	cd ./fip/sc2/nocs
 	./run-post.sh
 	./package-uboot.sh sto
@@ -85,7 +85,7 @@ then
 		mv sto/tmp.bin sto/bl33-payload.bin
 	fi;
 	cd -
-	./fip/sc2/bin/device-vendor-scs-signing.sh --key-dir bl33/v2019/board/amlogic/$1/device-keys/ --project $PRJ --input-dir ./fip/sc2/nocs/sto/ --rootkey-index 0 --chipset-variant nocs-prod --arb-config ./bl33/v2019/board/amlogic/$1/fw_arb.cfg --out-dir ./fip/sc2/nocs/sto/
+	./fip/sc2/bin/device-vendor-scs-signing.sh --key-dir board/amlogic/$1/device-keys/ --project $PRJ --input-dir ./fip/sc2/nocs/sto/ --rootkey-index 0 --chipset-variant nocs-prod --arb-config ./board/amlogic/$1/fw_arb.cfg --out-dir ./fip/sc2/nocs/sto/
 	cd -
 	cp stage-5-stbm-process-signed/output/bb1st.bin sto/bb1st.sto.nocs-prod.bin.device.signed
 	cp stage-5-stbm-process-signed/output/blob-bl2e.bin sto/blob-bl2e.sto.nocs-prod.bin.device.signed
@@ -112,8 +112,8 @@ then
 	echo "please use ./build/u-boot.bin.device.signed for normal mode uboot";
 	echo "please program ./fip/sc2/nocs/efuse/out/all.efuse into chipset OTP space";
 else		#//build usb and sto mode u-boot
-	sed -i 's/\/\/#define\ CONFIG_AML_SIGNED_UBOOT.*/'#define\ CONFIG_AML_SIGNED_UBOOT\ \ \ 1'/' bl33/v2019/board/amlogic/configs/$1.h
-	sed -i 's/#define\ CONFIG_AML_SIGNED_UBOOT /\/\/#define\ CONFIG_AML_SIGNED_UBOOT /' bl33/v2019/board/amlogic/configs/$1.h
+	sed -i 's/\/\/#define\ CONFIG_AML_SIGNED_UBOOT.*/'#define\ CONFIG_AML_SIGNED_UBOOT\ \ \ 1'/' board/amlogic/configs/$1.h
+	sed -i 's/#define\ CONFIG_AML_SIGNED_UBOOT /\/\/#define\ CONFIG_AML_SIGNED_UBOOT /' board/amlogic/configs/$1.h
 	./mk $1 --chip-varient nocs-prod --former-sign $2
 	cd ./fip/sc2/nocs
 	./run-pre.sh

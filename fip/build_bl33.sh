@@ -12,11 +12,11 @@ function select_uboot() {
 		if [ "$cfg_name" == "$temp_file" ]; then
 			if [ "1" == "${CONFIG_CHOICE_BUILD}" ]; then
 				if [ "2015" == "${CONFIG_BUILD_VERSION}" ]; then
-					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION1}
+					bl33_path=${UBOOT_VERSION1}
 				elif [ "2019" == "${CONFIG_BUILD_VERSION}" ]; then
-					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION2}
+					bl33_path=${UBOOT_VERSION2}
 				elif [ "2023" == "${CONFIG_BUILD_VERSION}" ]; then
-					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION3}
+					bl33_path=${UBOOT_VERSION3}
 				else
 					echo "input parameter error"
 					exit 1
@@ -25,19 +25,19 @@ function select_uboot() {
 				if [ "${BL33_DEFCFG1}" == "$(dirname $file)" ]; then
 					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION1}
 				elif [ "${BL33_DEFCFG2}" == "$(dirname $file)" ]; then
-					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION2}
+					bl33_path=${UBOOT_VERSION2}
 				elif [ "${BL33_DEFCFG3}" == "$(dirname $file)" ]; then
-					bl33_path=${UBOOT_FOLDER}/${UBOOT_VERSION3}
+					bl33_path=${UBOOT_VERSION3}
 				else
 					echo "not found defconfig"
 					exit 1
 				fi
 			fi
 			echo "select bl33: ${bl33_path}"
-			BL33_BUILD_FOLDER=${bl33_path}/build/
+			BL33_BUILD_FOLDER=build/
 			SOURCE_FILE=("${BL33_BUILD_FOLDER}.config")
 			CONFIG_FILE=("${BL33_BUILD_FOLDER}include/autoconf.mk")
-			UBOOT_SRC_FOLDER=${bl33_path}
+			UBOOT_SRC_FOLDER=`pwd`
 			break
 		fi
 	done
@@ -46,7 +46,6 @@ function select_uboot() {
 
 function pre_build_uboot() {
 	select_uboot $1
-	cd ${UBOOT_SRC_FOLDER}
 	echo -n "Compile config: "
 	echo "$1"
 	SOCNAME=$1

@@ -31,6 +31,8 @@
 # Build tree
 /build-*
 build/*
+bl33z/build/
+bl30/src_ao/demos/amlogic/n200/t7/kvim4/gcc/
 
 #
 # Top-level generic files

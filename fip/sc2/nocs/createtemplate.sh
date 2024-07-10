@@ -1,6 +1,6 @@
 #!/bin/bash
-echo "./bl33/v2019/board/amlogic/$1/fw_arb.cfg"
-source ./bl33/v2019/board/amlogic/$1/fw_arb.cfg
+echo "./board/amlogic/$1/fw_arb.cfg"
+source ./board/amlogic/$1/fw_arb.cfg
 export DEVICE_SCS_VERS
 export DEVICE_TEE_VERS
 export DEVICE_REE_VERS
