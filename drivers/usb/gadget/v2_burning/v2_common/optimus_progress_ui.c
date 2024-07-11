@@ -124,7 +124,6 @@ int video_res_prepare_for_upgrade(HIMAGE hImg)
 
 static int _show_burn_logo(const char* bmpOffsetName) //Display logo to report burning result is failed
 {
-    run_command("setenv display_layer osd0", 0);
     int ret = 0;
     char bmpCmd[64] = "bmp display %s";
     char* bmpAddrEnv = getenv((char*)bmpOffsetName);
