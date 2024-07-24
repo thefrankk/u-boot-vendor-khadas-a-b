@@ -562,7 +562,7 @@ static int rockchip_panel_ofdata_to_platdata(struct udevice *dev)
 			if(khadas_mipi_id == 0x00){//TS101
 				khadas_mipi_id = 2;
 			}else {
-				khadas_mipi_id = 0;
+				khadas_mipi_id = 3;
 			}
 		}
 		first_flag = 0;
