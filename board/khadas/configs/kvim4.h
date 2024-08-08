@@ -84,7 +84,6 @@
 		"\0"
 #else
 #define CONFIG_EXTRA_HDMI_ENV_SETTINGS \
-	"panel_type=vbyone_0\0" \
 	"panel1_type=vbyone_2\0" \
 	"panel2_type=lvds_1\0" \
 	"lcd1_ctrl=0x00000000\0" \
@@ -94,10 +93,14 @@
 	"cvbsmode=576cvbs\0" \
 	"dptx0_ctrl=0x00000000\0" \
 	"dptx1_ctrl=0x00000000\0" \
-	"outputmode=2160p60hz\0" \
+	"ts050_output=panel\0" \
+	"ts101_output=panel\0" \
+	"vbo_output=panel1\0" \
+	"vbo_type=VBYONE-B\0" \
+	"outputmode=panel\0" \
 	"outputmode2=1080p60hz\0" \
 	"cvbsmode=576cvbs\0" \
-	"connector0_type=VBYONE-B\0" \
+	"connector0_type=MIPI-A\0" \
 	"connector1_type=HDMI-A-C\0" \
 	"connector2_type=NULL\0" \
 	"storeargs_hdmitx="\
@@ -305,6 +308,25 @@
                    "kbi wolreset;"\
                "fi;"\
             "\0"\
+        "check_panel="\
+				"fdt addr ${dtb_mem_addr}; "\
+				"if test ${khadas_mipi_id} = 1 || test ${khadas_mipi_id} = 3; then "\
+					"echo check T050 panel; outputmode=$ts050_output; setenv outputmode ${ts050_output};"\
+					"fdt set /soc/apb4@fe000000/i2c@6c000/gt9xx@14 status disable;"\
+					"fdt set /soc/apb4@fe000000/i2c@6c000/ft5336@38 status okay;"\
+					"fdt set /fb display_size_default <0x00000870 0x00000f00 0x00000870 0x00001e00 0x00000020>;"\
+				"else if test ${khadas_mipi_id} = 2; then "\
+					"echo check T101 panel; outputmode=$ts101_output; setenv outputmode ${ts101_output};"\
+					"fdt set /soc/apb4@fe000000/i2c@6c000/gt9xx@14 status okay;"\
+					"fdt set /soc/apb4@fe000000/i2c@6c000/ft5336@38 status disable;"\
+					"fdt set /fb display_size_default <0x00000f00 0x00000960 0x00000f00 0x000012c0 0x00000020>;"\
+					"fdt set /fb mem_size <0x00800000 0x04800000 0x00100000 0x00100000 0x00100000>;"\
+				"else "\
+					"echo no check dsi panel; outputmode=$vbo_output; setenv outputmode ${vbo_output}; connector0_type=$vbo_type;"\
+					"fdt set /fb display_size_default <0x00000f00 0x00000870 0x00000f00 0x000010e0 0x00000020>;"\
+				"fi;fi;"\
+				"echo $outputmode;"\
+			"\0"\
         "check_camera="\
 				"fdt addr ${dtb_mem_addr}; "\
                 "if test ${t7c_check_camera} = 2; then "\
@@ -319,6 +341,24 @@
                         "fdt set /csiphy0@0xfe3bec00/ports/port@1/endpoint status okay;"\
 				    "fi;fi;"\
                 "fi;"\
+			"\0"\
+        "check_vbo="\
+				"fdt addr ${dtb_mem_addr}; "\
+				"if gpio input GPIOY_11; then "\
+					"echo check has vbo panel;"\
+					"fdt set /backlight1 status okay;"\
+					"fdt set /soc/apb4@fe000000/pwm@5c000 status okay;"\
+				"else "\
+					"echo check no vbo panel;"\
+					"if test ${khadas_mipi_id} = 1 || test ${khadas_mipi_id} = 3; then "\
+						"echo check T050 panel;"\
+					"else if test ${khadas_mipi_id} = 2; then "\
+						"echo check T101 panel;"\
+					"else "\
+						"fdt set /backlight1 status disable;"\
+						"fdt set /soc/apb4@fe000000/pwm@5c000 status disable;"\
+					"fi;fi;"\
+				"fi;"\
 			"\0"\
 		"bcb_cmd="\
 			"run bcb_cmd_base;"\
@@ -362,6 +402,7 @@
 				"setenv serial ${usid}; setenv serial# ${usid};"\
             "kbi ethmac noprint;"\
 				"setenv bootargs ${bootargs} mac=${eth_mac} androidboot.mac=${eth_mac};"\
+			"setenv bootargs ${bootargs} khadas_mipi_id=${khadas_mipi_id};"\
             "setenv bootargs ${bootargs} t7c_check_camera=${t7c_check_camera};"\
             "setenv bootargs ${bootargs} khadas_camera_id=${khadas_camera_id};"\
 			"setenv bootargs ${bootargs} wol_enable=${wol_enable};"\
@@ -388,10 +429,12 @@
 
 
 #define CONFIG_PREBOOT  \
+            "run check_panel;"\
             "run check_camera;"\
             "run upgrade_check;"\
             "run check_display;"\
             "run wol_init;"\
+            "run check_vbo;"\
             "run storeargs;"\
             "run upgrade_key;" \
             "bcb uboot-command;" \
@@ -401,13 +444,27 @@
 #ifndef CONFIG_HDMITX_ONLY
 /* dual logo, normal boot */
 #define CONFIG_DUAL_LOGO \
+	"echo CONFIG_DUAL_LOGO1; "\
+	"setenv fb_width 1920;setenv fb_height 1080;"\
+	"setenv display_width 1920;setenv display_height 1080;"\
 	"setenv display_layer viu2_osd0;vout2 prepare ${outputmode2};"\
 	"osd open;osd clear;run load_bmp_logo;vout2 output ${outputmode2};bmp scale;"\
 	"if test ${outputmode2} = ${save_outputmode}; then "\
 		"dovi set;dovi pkg;vpp hdrpkt;"\
 	"fi; "\
-	"setenv display_layer osd0;osd open;osd clear;"\
-	"run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"if test ${khadas_mipi_id} = 1 || test ${khadas_mipi_id} = 3; then "\
+        "setenv fb_width 1080;setenv fb_height 1920;"\
+        "setenv display_width 1080;setenv display_height 1920;"\
+        "setenv display_layer osd0;osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout output ${outputmode};"\
+	"else if test ${khadas_mipi_id} = 2; then "\
+        "setenv fb_width 1920;setenv fb_height 1200;"\
+        "setenv display_width 1920;setenv display_height 1200;"\
+		"setenv display_layer osd0;osd open;osd clear;run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"else "\
+        "setenv fb_width 1920;setenv fb_height 1080;"\
+        "setenv display_width 1920;setenv display_height 1080;"\
+        "setenv display_layer osd0;osd open;osd clear;run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"fi;fi;"\
 	"if test ${outputmode} = ${save_outputmode}; then "\
 		"dovi set;dovi pkg;vpp hdrpkt;"\
 	"fi; "\
@@ -415,26 +472,34 @@
 
 /* dual logo, factory_reset boot, recovery always displays on panel */
 #define CONFIG_RECOVERY_DUAL_LOGO \
+	"echo CONFIG_RECOVERY_DUAL_LOGO; "\
+	"setenv fb_width 1920;setenv fb_height 1080;"\
+	"setenv fb_width 1920;setenv fb_height 1080;"\
 	"setenv display_layer viu2_osd0;vout2 prepare ${outputmode2};"\
 	"osd open;osd clear;run load_bmp_logo;vout2 output ${outputmode2};bmp scale;"\
 	"if test ${outputmode2} = ${save_outputmode}; then "\
 		"dovi set;dovi pkg;vpp hdrpkt;"\
 	"fi; "\
-	"setenv display_layer osd0;osd open;osd clear;"\
-	"run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"if test ${khadas_mipi_id} = 1 || test ${khadas_mipi_id} = 3; then "\
+        "setenv fb_width 1080;setenv fb_height 1920;"\
+        "setenv display_width 1080;setenv display_height 1920;"\
+        "setenv display_layer osd0;osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout output ${outputmode};"\
+	"else if test ${khadas_mipi_id} = 2; then "\
+        "setenv fb_width 1920;setenv fb_height 1200;"\
+        "setenv display_width 1920;setenv display_height 1200;"\
+		"setenv display_layer osd0;osd open;osd clear;run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"else "\
+        "setenv fb_width 1920;setenv fb_height 1080;"\
+        "setenv display_width 1920;setenv display_height 1080;"\
+        "setenv display_layer osd0;osd open;osd clear;run load_bmp_logo;bmp scale;vout output ${outputmode};"\
+	"fi;fi;"\
 	"if test ${outputmode} = ${save_outputmode}; then "\
 		"dovi set;dovi pkg;vpp hdrpkt;"\
 	"fi; "\
 	"\0"\
 
 /* single logo */
-#define CONFIG_SINGLE_LOGO \
-	"setenv display_layer osd0;osd open;osd clear;"\
-	"run load_bmp_logo;bmp scale;vout output ${outputmode};"\
-	"if test ${outputmode} = ${save_outputmode}; then "\
-		"dovi set;dovi pkg;vpp hdrpkt;"\
-	"fi; "\
-	"\0"
+#define CONFIG_SINGLE_LOGO CONFIG_RECOVERY_DUAL_LOGO
 #endif
 
 /* #define CONFIG_ENV_IS_NOWHERE  1 */

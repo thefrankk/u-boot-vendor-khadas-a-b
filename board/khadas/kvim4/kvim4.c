@@ -639,6 +639,7 @@ int checkhw(char * name)
 #else
 	env_set("aml_dt", "t7c_a311d2_an400\0");
 #endif
+	run_command("kbi check_panel", 0);
 	if (strcmp(env_get("aml_dt"),"t7c_a311d2_vim4n") == 0) {
 		t7c_check_camera = 2;
 		env_set("t7c_check_camera", "2");//t7c check MIPI camera
