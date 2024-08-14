@@ -1348,6 +1348,10 @@ static const struct drm_display_mode drm_dmt_modes[] = {
 	{ DRM_MODE(DRM_MODE_TYPE_DRIVER, 556188, 4096, 4104,
 		   4136, 4176, 2160, 2208, 2216, 2222, 0,
 		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_NVSYNC) },
+	/* 0x59 - 1024x600@59.94Hz RB */
+	{ DRM_MODE(DRM_MODE_TYPE_DRIVER, 44580, 1024, 1064,
+		   1112, 1152, 600, 613, 616, 645, 0,
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC) },
 };
 
 /*
@@ -1605,6 +1609,11 @@ static const struct drm_display_mode resolution_white[] = {
 	{ DRM_MODE(DRM_MODE_TYPE_DRIVER, 2376000, 7680, 8232,
 		   8408, 9000, 4320, 4336, 4356, 4400, 0,
 		   DRM_MODE_FLAG_PHSYNC | DRM_MODE_FLAG_PVSYNC),
+	.vrefresh = 60, .picture_aspect_ratio = HDMI_PICTURE_ASPECT_16_9, },
+	/* 33. vic:200 - 1024x600@60Hz 16:9 */
+	{ DRM_MODE(DRM_MODE_TYPE_DRIVER, 44580, 1024, 1064,
+		   1112, 1152, 600, 613, 616, 645, 0,
+		   DRM_MODE_FLAG_NHSYNC | DRM_MODE_FLAG_NVSYNC),
 	.vrefresh = 60, .picture_aspect_ratio = HDMI_PICTURE_ASPECT_16_9, },
 };
 
