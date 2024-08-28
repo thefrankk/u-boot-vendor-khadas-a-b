@@ -54,9 +54,9 @@ BL2_T7_BRANCH="projects/openlinux/bl-t7-${STABLE_MAJOR_VERSION}"
 BL2_S7_BRANCH="projects/openlinux/bl-s7-${STABLE_MAJOR_VERSION}"
 
 # push uboot.bin to android dir
-declare -a OPENLINUX_BOARD_TYPE=("ohm" "oppen" "tyson" "t7_an400" "qurra")
+declare -a OPENLINUX_BOARD_TYPE=("ohm" "oppen" "tyson" "kvim4n" "qurra")
 declare -a OPENLINUX_BOARD_BRANCH=("${BL2_SC2_BRANCH}" "${BL2_S4_BRANCH}" "${BL2_S5_BRANCH}" "${BL2_T7_BRANCH}" "${BL2_S7_BRANCH}")
-declare -a OPENLINUX_BOARD_CONFIG=("sc2_ah212" "s4_ap222" "s5_ax201" "t7_an400_lpddr4x" "s7_bh201")
+declare -a OPENLINUX_BOARD_CONFIG=("sc2_ah212" "s4_ap222" "s5_ax201" "t7c_kvim4n" "s7_bh201")
 ANDROID_DEV_DIR="device/amlogic"
 ANDROID_DIR_OHM="${ANDROID_ROOT_DIR}/${ANDROID_DEV_DIR}/${OPENLINUX_BOARD_TYPE[0]}"
 ANDROID_DIR_OPPEN="${ANDROID_ROOT_DIR}/${ANDROID_DEV_DIR}/${OPENLINUX_BOARD_TYPE[1]}"
