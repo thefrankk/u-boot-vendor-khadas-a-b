@@ -606,7 +606,8 @@ static void get_highest_hdmimode(hdmi_data_t *hdmi_data, char *mode)
 		}
 	}
 
-	strcpy(mode, value);
+	/* The extended plane supports a maximum resolution of only 1080p.  */
+	strcpy(mode, "1080p60hz");
 	printf("set HDMI to highest edid mode: %s\n", mode);
 }
 

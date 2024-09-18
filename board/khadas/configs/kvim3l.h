@@ -164,7 +164,7 @@
             "else fi;"\
             "\0"\
         "storeargs="\
-            "setenv bootargs ${initargs} ${fs_type} hdr_policy=${hdr_policy} hdr_priority=${hdr_priority} otg_device=${otg_device} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} fb_width=${fb_width} fb_height=${fb_height} vout2=${outputmode2},enable vout=${outputmode},enable panel_type=${panel_type} lcd_ctrl=${lcd_ctrl} hdmitx=${cecconfig},${colorattribute} hdmimode=${hdmimode} nativeui=${nativeui} hdmichecksum=${hdmichecksum} dolby_vision_on=${dolby_vision_on} frac_rate_policy=${frac_rate_policy} hdmi_read_edid=${hdmi_read_edid} cvbsmode=${cvbsmode} osd_reverse=${osd_reverse} video_reverse=${video_reverse} irq_check_en=${Irq_check_en}  androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag} wol_enable=${wol_enable} hwver=${hwver} spi_state=${spi_state} fusb302_state=${fusb302_state} factory_mac=${factory_mac} lcd_exist=${lcd_exist} ext_board_exist=${ext_board_exist} m2x_board_exist=${m2x_board_exist}; "\
+            "setenv bootargs ${initargs} hdr_policy=${hdr_policy} hdr_priority=${hdr_priority} otg_device=${otg_device} reboot_mode_android=${reboot_mode_android} logo=${display_layer},loaded,${fb_addr} fb_width=${fb_width} fb_height=${fb_height} display_bpp=${display_bpp} outputmode=${outputmode} outputmode2=${outputmode2} vout2=${outputmode2},enable vout=${outputmode},enable panel_type=${panel_type} lcd_ctrl=${lcd_ctrl} hdmitx=${cecconfig},${colorattribute} hdmimode=${hdmimode} nativeui=${nativeui} hdmichecksum=${hdmichecksum} dolby_vision_on=${dolby_vision_on} frac_rate_policy=${frac_rate_policy} hdmi_read_edid=${hdmi_read_edid} cvbsmode=${cvbsmode} osd_reverse=${osd_reverse} video_reverse=${video_reverse} irq_check_en=${Irq_check_en}  androidboot.selinux=${EnableSelinux} androidboot.firstboot=${firstboot} jtag=${jtag} wol_enable=${wol_enable} spi_state=${spi_state} fusb302_state=${fusb302_state} hwver=${hwver} factory_mac=${factory_mac} lcd_exist=${lcd_exist} ext_board_exist=${ext_board_exist} m2x_board_exist=${m2x_board_exist}; "\
 	        "setenv bootargs ${bootargs} androidboot.hardware=amlogic androidboot.bootloader=${bootloader_version} androidboot.build.expect.baseband=N/A;"\
             "run cmdline_keys;"\
             "\0"\
@@ -469,36 +469,36 @@
   * logo2: bootup_rotate_secondary.bmp (for portrait screen)
   */
 #define CONFIG_DUAL_LOGO \
-    "setenv outputmode 1080p60hz;setenv display_layer osd0;"\
-	"vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
     "if test ${khadas_mipi_id} = 2; then "\
+        "setenv outputmode ${ts101_output};setenv display_layer osd0;"\
+        "vout prepare $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output $outputmode;"\
         "setenv fb_width 1790; setenv fb_height 1050;"\
         "setenv display_width 1920;setenv display_height 1200;"\
-        "setenv outputmode2 ${ts101_output};setenv display_layer viu2_osd0;"\
-	    "vout2 prepare ${outputmode2};osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout2 output ${outputmode2};"\
     "else "\
-        "setenv fb_width 1920;setenv fb_height 1080;"\
-        "setenv display_width 1920;setenv display_height 1080;"\
-	    "setenv outputmode2 ${ts050_output};setenv display_layer viu2_osd0;"\
-	    "vout2 prepare ${outputmode2};osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout2 output ${outputmode2};"\
+        "setenv outputmode ${ts050_output};setenv display_layer osd0;"\
+        "vout prepare $outputmode;osd open;osd clear;imgread pic logo bootup_rotate_secondary $loadaddr;bmp display $bootup_rotate_secondary_offset;bmp scale;vout output $outputmode;"\
+        "setenv fb_width 1080;setenv fb_height 1920;"\
+        "setenv display_width 1080;setenv display_height 1920;"\
     "fi;"\
+    "setenv outputmode2 $hdmimode;setenv display_layer viu2_osd0;"\
+    "vout2 prepare $outputmode2;vout2 output $outputmode2;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
     "\0"\
 
 /* buffer rotate for portrait screen */
 #define CONFIG_SINGLE_LOGO \
-	"setenv display_layer osd0;"\
+    "setenv display_layer osd0;"\
     "if test ${khadas_mipi_id} = 2; then "\
         "setenv outputmode ${ts101_output};"\
         "setenv fb_width 1920; setenv fb_height 1200;"\
         "setenv display_width 1920;setenv display_height 1200;"\
-        "vout output $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;"\
+        "vout prepare $outputmode;osd open;osd clear;imgread pic logo bootup $loadaddr;bmp display $bootup_offset;bmp scale;vout output $outputmode;"\
     "else "\
         "setenv outputmode ${ts050_output};"\
-	    "setenv fb_width 1080;setenv fb_height 1920;"\
+        "setenv fb_width 1080; setenv fb_height 1920;"\
         "setenv display_width 1080;setenv display_height 1920;"\
-	    "vout output $outputmode;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;"\
+        "vout prepare $outputmode;osd open;osd clear;imgread pic logo bootup_rotate $loadaddr;bmp display $bootup_rotate_offset;bmp scale;vout output $outputmode;"\
     "fi;"\
-	"\0"\
+    "\0"\
 
 //#define CONFIG_ENV_IS_NOWHERE  1
 #define CONFIG_ENV_SIZE   (64*1024)
@@ -661,10 +661,10 @@
 
 /* DISPLAY & HDMITX */
 #define CONFIG_AML_HDMITX20 1
-#if defined(CONFIG_AML_HDMITX20)
-#define CONFIG_AML_DOLBY 1
-#define CONFIG_CMD_INI 1
-#endif
+//#if defined(CONFIG_AML_HDMITX20)
+//#define CONFIG_AML_DOLBY 1
+//#define CONFIG_CMD_INI 1
+//#endif
 #define CONFIG_AML_CANVAS 1
 #define CONFIG_AML_VOUT 1
 #define CONFIG_AML_OSD 1
@@ -673,7 +673,7 @@
 #define CONFIG_AML_MINUI 1
 
 #if defined(CONFIG_AML_VOUT)
-#define CONFIG_AML_CVBS 1
+//#define CONFIG_AML_CVBS 1
 #endif
 
 #define CONFIG_AML_LCD    1
