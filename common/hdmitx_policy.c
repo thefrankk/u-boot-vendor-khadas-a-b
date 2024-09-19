@@ -565,6 +565,7 @@ static void update_dv_displaymode(hdmi_data_t *hdmi_data,
 }
 
 /* get the highest hdmi mode by edid */
+extern int khadas_mipi_id;
 static void get_highest_hdmimode(hdmi_data_t *hdmi_data, char *mode)
 {
 	char value[MODE_LEN] = {0};
@@ -607,7 +608,11 @@ static void get_highest_hdmimode(hdmi_data_t *hdmi_data, char *mode)
 	}
 
 	/* The extended plane supports a maximum resolution of only 1080p.  */
-	strcpy(mode, "1080p60hz");
+	if(khadas_mipi_id == 0) {
+		strcpy(mode, value);
+	} else {
+		strcpy(mode, "1080p60hz");
+	}
 	printf("set HDMI to highest edid mode: %s\n", mode);
 }
 
