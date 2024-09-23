@@ -1427,6 +1427,9 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 	void *dst_rotate = NULL;
 	int len, dst_size;
 	int ret = 0;
+	ulong logo_addr_r;
+
+	logo_addr_r = env_get_ulong("logo_addr_r", 16, 0);
 
 	if (!logo || !bmp_name)
 		return -EINVAL;
@@ -1440,17 +1443,14 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 		return 0;
 	}
 
-	bmp_data = malloc(MAX_IMAGE_BYTES);
-	if (!bmp_data)
-		return -ENOMEM;
+	// Load logo from root filesystem
+	env_set("logo_file", bmp_name);
+	run_command(env_get("logocmd"), 0);
+	len = env_get_ulong("logo_filesize", 16, 0);
+
+	bmp_data = (void *)logo_addr_r;
 
 	bmp_create(&bmp, &bitmap_callbacks);
-
-	len = rockchip_read_resource_file(bmp_data, bmp_name, 0, MAX_IMAGE_BYTES);
-	if (len < 0) {
-		ret = -EINVAL;
-		goto free_bmp_data;
-	}
 
 	/* analyse the BMP */
 	code = bmp_analyse(&bmp, len, bmp_data);
@@ -1508,7 +1508,7 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 free_bmp_data:
 	/* clean up */
 	bmp_finalise(&bmp);
-	free(bmp_data);
+//	free(bmp_data);
 
 	return ret;
 #else
