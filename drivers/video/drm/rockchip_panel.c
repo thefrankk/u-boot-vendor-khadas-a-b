@@ -562,13 +562,13 @@ static int rockchip_panel_ofdata_to_platdata(struct udevice *dev)
 			if(khadas_mipi_id == 0x00){//TS101
 				khadas_mipi_id = 2;
 			}else {
-				khadas_mipi_id = 3;
+				khadas_mipi_id = 0;
 			}
 		}
 		first_flag = 0;
 		printf("hlm khadas_mipi_id=%d\n",khadas_mipi_id);
 	}
-	if(3 == khadas_mipi_id){//new TS050
+	if(3 == khadas_mipi_id || 0 == khadas_mipi_id){//new TS050
 		printf("new TS050 to parse panel init sequence2\n");
 		data = dev_read_prop(dev, "panel-init-sequence2", &len);
 	}
