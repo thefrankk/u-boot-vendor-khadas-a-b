@@ -93,14 +93,13 @@
 	"cvbsmode=576cvbs\0" \
 	"dptx0_ctrl=0x00000000\0" \
 	"dptx1_ctrl=0x00000000\0" \
-	"ts050_output=panel\0" \
-	"ts101_output=panel\0" \
-	"vbo_output=panel1\0" \
+	"ts050_output=1080x1920p60hz\0" \
+	"ts101_output=1920x1200p60hz\0" \
+	"vbo_output=2160p60hz\0" \
 	"vbo_type=VBYONE-B\0" \
-	"outputmode=panel\0" \
-	"outputmode2=1080p60hz\0" \
+	"outputmode=1080x1920p60hz\0" \
+	"outputmode2=2160p60hz\0" \
 	"cvbsmode=576cvbs\0" \
-	"connector0_type=MIPI-A\0" \
 	"connector1_type=HDMI-A-C\0" \
 	"connector2_type=NULL\0" \
 	"storeargs_hdmitx="\
@@ -314,16 +313,12 @@
 					"echo check T050 panel; outputmode=$ts050_output; setenv outputmode ${ts050_output};"\
 					"fdt set /soc/apb4@fe000000/i2c@6c000/gt9xx@14 status disable;"\
 					"fdt set /soc/apb4@fe000000/i2c@6c000/ft5336@38 status okay;"\
-					"fdt set /fb display_size_default <0x00000870 0x00000f00 0x00000870 0x00001e00 0x00000020>;"\
 				"else if test ${khadas_mipi_id} = 2; then "\
 					"echo check T101 panel; outputmode=$ts101_output; setenv outputmode ${ts101_output};"\
 					"fdt set /soc/apb4@fe000000/i2c@6c000/gt9xx@14 status okay;"\
 					"fdt set /soc/apb4@fe000000/i2c@6c000/ft5336@38 status disable;"\
-					"fdt set /fb display_size_default <0x00000f00 0x00000960 0x00000f00 0x000012c0 0x00000020>;"\
-					"fdt set /fb mem_size <0x00800000 0x04800000 0x00100000 0x00100000 0x00100000>;"\
 				"else "\
-					"echo no check dsi panel; outputmode=$vbo_output; setenv outputmode ${vbo_output}; connector0_type=$vbo_type;"\
-					"fdt set /fb display_size_default <0x00000f00 0x00000870 0x00000f00 0x000010e0 0x00000020>;"\
+					"echo no check dsi panel; outputmode=$vbo_output; setenv outputmode ${vbo_output};"\
 				"fi;fi;"\
 				"echo $outputmode;"\
 			"\0"\

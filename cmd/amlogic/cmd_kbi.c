@@ -1177,10 +1177,12 @@ static int do_check_panel(cmd_tbl_t * cmdtp, int flag, int argc, char * const ar
 		khadas_mipi_id = 1;
 		setenv("khadas_mipi_id", "1");
 		setenv("panel_type", "mipi_0");
+		setenv("connector0_type", "MIPI-A");
 	}else if(khadas_mipi_id == 0x79){//new TS050
 		khadas_mipi_id = 3;
 		setenv("khadas_mipi_id", "3");
 		setenv("panel_type", "mipi_2");
+		setenv("connector0_type", "MIPI-A");
 	}else{
 		khadas_mipi_id = tp_i2c_read(0x9e,TP10_CHIP_ADDR);
 		printf("TP10 id=0x%x\n",khadas_mipi_id);
@@ -1188,10 +1190,12 @@ static int do_check_panel(cmd_tbl_t * cmdtp, int flag, int argc, char * const ar
 			khadas_mipi_id = 2;
 			setenv("khadas_mipi_id", "2");
 			setenv("panel_type", "mipi_1");
+			setenv("connector0_type", "MIPI-A");
 		}else {
 			khadas_mipi_id = 0;
 			setenv("khadas_mipi_id", "0");//VBO
 			setenv("panel_type", "mipi_0");
+			setenv("connector0_type", "VBYONE-B");
 		}
 	}
 	printf("hlm khadas_mipi_id=%d\n",khadas_mipi_id);

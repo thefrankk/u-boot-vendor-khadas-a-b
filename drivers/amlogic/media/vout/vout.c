@@ -338,6 +338,15 @@ static const struct vout_set_s vout_sets_dft[] = {
 		.viu_color_fmt     = VPP_CM_YUV,
 		.viu_mux           = VIU_MUX_ENCP,
 	},
+	{ /* VMODE_1080x1920p60hz */
+                .name              = "1080x1920p60hz",
+                .mode              = VMODE_1080x1920p60hz,
+                .width             = 1080,
+                .height            = 1920,
+                .field_height      = 1920,
+                .viu_color_fmt     = VPP_CM_YUV,
+                .viu_mux           = VIU_MUX_ENCP,
+    },
 	{ /* VMODE_1152x864p75hz */
 		.name              = "1152x864p75hz",
 		.mode              = VMODE_1152x864p75hz,
