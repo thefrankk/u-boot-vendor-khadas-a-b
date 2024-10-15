@@ -150,6 +150,9 @@
         "factory_mac=0\0"\
         "m2x_board_exist=0\0" \
         "ext_ethernet=0\0"\
+        "khadas_multiple_spdifout_id=1\0"\
+        "khadas_multiple_i2s_id=1\0"\
+        "khadas_multiple_uartc_id=1\0"\
         "reboot_mode_android=""normal""\0"\
         "Irq_check_en=0\0"\
         "fs_type=""rootfstype=ramfs""\0"\
@@ -364,6 +367,36 @@
                     "fdt set /fb display_size_default <0x00000438 0x00000780 0x00000438 0x00000f00 0x00000020>;"\
                 "fi;fi;fi;"\
 			"\0"\
+        "check_spdifout="\
+                "fdt addr ${dtb_mem_addr}; "\
+                "if test ${khadas_multiple_spdifout_id} = 1; then "\
+                    "echo set SPDIF_OUT okay;"\
+                    "fdt set /soc/audiobus@0xFF660000/spdif@0 status okay;"\
+                "else if test ${khadas_multiple_spdifout_id} = 0; then "\
+                    "echo set SPDIF_OUT disable;"\
+                    "fdt set /soc/audiobus@0xFF660000/spdif@0 status disable;"\
+                "fi;fi;"\
+            "\0"\
+        "check_i2s="\
+                "fdt addr ${dtb_mem_addr}; "\
+                "if test ${khadas_multiple_i2s_id} = 1; then "\
+                    "echo set I2S okay;"\
+                    "fdt set /soc/audiobus@0xFF660000/tdm@1 status okay;"\
+                "else if test ${khadas_multiple_i2s_id} = 0; then "\
+                    "echo set I2S disable;"\
+                    "fdt set /soc/audiobus@0xFF660000/tdm@1 status disable;"\
+                "fi;fi;"\
+            "\0"\
+        "check_uartc="\
+                "fdt addr ${dtb_mem_addr}; "\
+                "if test ${khadas_multiple_uartc_id} = 1; then "\
+                    "echo set UARTC okay;"\
+                    "fdt set /serial@ffd22000 status okay;"\
+                "else if test ${khadas_multiple_uartc_id} = 0; then "\
+                    "echo set UARTC disable;"\
+                    "fdt set /serial@ffd22000 status disable;"\
+                "fi;fi;"\
+            "\0"\
         "display_config="\
              "fdt addr ${dtb_mem_addr}; "\
              "if test ${lcd_exist} = 0; then "\
@@ -441,6 +474,9 @@
             "run bcb_cmd; "\
             "run burn_mac;"\
             "run check_panel;"\
+            "run check_spdifout;"\
+            "run check_i2s;"\
+            "run check_uartc;"\
             "run factory_reset_poweroff_protect;"\
             "run upgrade_check;"\
             "run init_display;"\
