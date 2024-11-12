@@ -97,7 +97,7 @@
 		"vout=${outputmode},${vout_init} panel_type=${panel_type} "\
 		"hdmitx=${cecconfig},${colorattribute} hdmimode=${hdmimode} "\
 		"hdmichecksum=${hdmichecksum} "\
-		"hdr_force_mode=${hdr_force_mode} dolby_status=${dolby_status} "\
+		"hdr_force_mode=${hdr_force_mode} "\
 		"frac_rate_policy=${frac_rate_policy} "\
 		"osd_reverse=${osd_reverse} video_reverse=${video_reverse} ;"\
 		"\0"\
@@ -236,7 +236,6 @@
 		"echo reboot_mode:::: ${reboot_mode};"\
 		"if test ${reboot_mode} = quiescent; then "\
 			"setenv reboot_mode_android ""quiescent"";"\
-			"setenv dolby_status 0;"\
 			"setenv dolby_vision_on 0;"\
 			"setenv initconfig androidboot.quiescent=1 "\
 			"androidboot.bootreason=${reboot_mode};"\
@@ -244,7 +243,6 @@
 			"setenv vout_init enable;"\
 		"else if test ${reboot_mode} = recovery_quiescent; then "\
 			"setenv reboot_mode_android ""quiescent"";"\
-			"setenv dolby_status 0;"\
 			"setenv dolby_vision_on 0;"\
 			"setenv initconfig androidboot.quiescent=1 "\
 			"androidboot.bootreason=recovery,quiescent;"\

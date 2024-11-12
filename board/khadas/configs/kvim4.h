@@ -105,7 +105,7 @@
 	"outputmode=1080p60hz\0" \
 	"storeargs_hdmitx="\
 		"setenv bootargs ${bootargs} "\
-		"lcd_ctrl=${lcd_ctrl} lcd_debug=${lcd_debug} "\
+		"lcd_ctrl=${lcd_ctrl} "\
 		"outputmode=${outputmode} hdmitx=${cecconfig},${colorattribute};"\
 		"\0"\
 	"init_display_hdmitx="\
@@ -129,11 +129,10 @@
 		"else "\
 			"setenv vout2_args vout2=${outputmode2},enable;"\
 		"fi;"\
-		"setenv bootargs ${bootargs} powermode=${powermode} "\
-		"lcd_ctrl=${lcd_ctrl} lcd_debug=${lcd_debug} "\
-		"outputmode=${outputmode} hdmitx=${cecconfig},${colorattribute} "\
-		"${vout2_args} panel1_type=${panel1_type} "\
-		"lcd1_ctrl=${lcd1_ctrl} panel2_type=${panel2_type} lcd2_ctrl=${lcd2_ctrl} "\
+		"setenv bootargs ${bootargs} "\
+		"lcd_ctrl=${lcd_ctrl} "\
+		"outputmode=${outputmode} "\
+		"${vout2_args} "\
 		"hdr_policy=${hdr_policy} hdr_priority=${hdr_priority};"\
 		"\0"\
 	"init_display_hdmitx="\
