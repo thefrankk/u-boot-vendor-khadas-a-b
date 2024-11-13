@@ -1160,6 +1160,7 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 	int ret = 0;
 	int reserved = 0;
 	int dst_size;
+	char cmd[256] = {"0"};
 
 	if (!logo || !bmp_name)
 		return -EINVAL;
@@ -1176,10 +1177,23 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 	if (!header)
 		return -ENOMEM;
 
-	len = rockchip_read_resource_file(header, bmp_name, 0, RK_BLK_SIZE);
-	if (len != RK_BLK_SIZE) {
-		ret = -EINVAL;
-		goto free_header;
+//	len = rockchip_read_resource_file(header, bmp_name, 0, RK_BLK_SIZE);
+//	if (len != RK_BLK_SIZE) {
+//		ret = -EINVAL;
+//		goto free_header;
+//	}
+	sprintf(cmd, "ext4load mmc 0:9 0x%p %s %x", header, bmp_name, RK_BLK_SIZE);
+	printf("header load_bmp_logo cmd %s...\n", cmd);
+	if(run_command(cmd, 0)){
+		len = rockchip_read_resource_file(header, bmp_name, 0, RK_BLK_SIZE);
+		printf("header rockchip_read_resource_file len %d...\n", len);
+		if (len < 0) {
+			ret = -EINVAL;
+			goto free_header;
+		}
+	} else {
+		len = RK_BLK_SIZE;
+		printf("header load custom logo success...\n");
 	}
 
 	logo->bpp = get_unaligned_le16(&header->bit_count);
@@ -1203,11 +1217,24 @@ static int load_bmp_logo(struct logo_info *logo, const char *bmp_name)
 		dst = pdst;
 	}
 
-	len = rockchip_read_resource_file(pdst, bmp_name, 0, size);
-	if (len != size) {
-		printf("failed to load bmp %s\n", bmp_name);
-		ret = -ENOENT;
-		goto free_header;
+//	len = rockchip_read_resource_file(pdst, bmp_name, 0, size);
+//	if (len != size) {
+//		printf("failed to load bmp %s\n", bmp_name);
+//		ret = -ENOENT;
+//		goto free_header;
+//	}
+	sprintf(cmd, "ext4load mmc 0:9 0x%p %s %x", pdst, bmp_name, size);
+	printf("pdst load_bmp_logo cmd %s...\n", cmd);
+	if(run_command(cmd, 0)){
+		len = rockchip_read_resource_file(pdst, bmp_name, 0, size);
+		printf("pdst rockchip_read_resource_file len %d...\n", len);
+		if (len < 0) {
+			ret = -ENOENT;
+			goto free_header;
+		}
+	} else {
+		len = size;
+		printf("pdst load custom logo success...\n");
 	}
 
 	if (!can_direct_logo(logo->bpp)) {
