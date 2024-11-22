@@ -107,6 +107,7 @@
         "EnableSelinux=permissive\0" \
         "recovery_part=recovery\0"\
         "loglevel=7\0" \
+        "khadas_multiple_uartc_id=1\0"\
         "lock=10101000\0"\
         "recovery_offset=0\0"\
         "cvbs_drv=0\0"\
@@ -266,6 +267,16 @@
 	"hwver_check="\
             "kbi hwver;"\
             "\0"\
+        "check_uartc="\
+                "fdt addr ${dtb_mem_addr}; "\
+                "if test ${khadas_multiple_uartc_id} = 1; then "\
+                    "echo set UARTC okay;"\
+                    "fdt set /soc/serial@fe07c000 status okay;"\
+                "else if test ${khadas_multiple_uartc_id} = 0; then "\
+                    "echo set UARTC disable;"\
+                    "fdt set /soc/serial@fe07c000 status disable;"\
+                "fi;fi;"\
+            "\0"\
         "init_display="\
             "get_rebootmode;"\
             "echo reboot_mode:::: ${reboot_mode};"\
@@ -330,14 +341,15 @@
 
 #ifndef CONFIG_PXP_DDR
 #define CONFIG_PREBOOT  \
-            "run bcb_cmd; "\
-	    "run hwver_check;"\
-            "run upgrade_check;"\
-            "run init_display;"\
-            "run storeargs;"\
-	    "run upgrade_key;" \
-            "bcb uboot-command;"\
-	    "run switch_bootmode;"
+        "run bcb_cmd; "\
+        "run hwver_check;"\
+        "run check_uartc;"\
+        "run upgrade_check;"\
+        "run init_display;"\
+        "run storeargs;"\
+        "run upgrade_key;" \
+        "bcb uboot-command;"\
+        "run switch_bootmode;"
 #else
 #define CONFIG_PREBOOT  "echo preboot"
 #endif
