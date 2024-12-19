@@ -271,11 +271,16 @@
 			"boot_cooling;"\
 			"\0"\
 		"storeboot="\
-			"if load mmc 0:1 1020000 s905_autoscript || load mmc 1:1 1020000 s905_autoscript || load mmc 1:5 1020000 /boot/s905_autoscript; then autoscr 1020000; fi;"\
-			"ext4load mmc 1:5 1080000 zImage;ext4load mmc 1:5 10000000 uInitrd;ext4load mmc 1:5 20000000 dtb.img;booti 1080000 10000000 20000000;"\
-			"for p in 1 2 3 4 5 6 7 8 9 A B C D E F 10 11 12 13 14 15 16 17 18; do if fatload mmc 1:${p} ${loadaddr} aml_autoscript; then autoscr ${loadaddr}; fi; done;"\
-			"run update;"\
-			"\0"\
+		    "if load mmc 1:1 ${loadaddr} /boot.scr; then "\
+		        "echo Found boot.scr, executing...;"\
+		        "source ${loadaddr};"\
+		    "else "\
+		        "echo No boot.scr found, loading kernel and DTB directly;"\
+		        "ext4load mmc 1:1 ${kernel_addr_r} /boot/Image;"\
+		        "ext4load mmc 1:1 ${fdt_addr_r} /boot/dtb;"\
+		        "booti ${kernel_addr_r} - ${fdt_addr_r};"\
+		    "fi;"\
+		    "\0"
 		"factory_reset_poweroff_protect="\
 			"echo wipe_data=${wipe_data}; echo wipe_cache=${wipe_cache};"\
 			"if test ${wipe_data} = failed; then "\
