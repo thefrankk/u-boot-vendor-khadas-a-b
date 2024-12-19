@@ -280,7 +280,7 @@
 		        "ext4load mmc 1:1 ${fdt_addr_r} /boot/dtb;"\
 		        "booti ${kernel_addr_r} - ${fdt_addr_r};"\
 		    "fi;"\
-		    "\0"
+		    "\0"\
 		"factory_reset_poweroff_protect="\
 			"echo wipe_data=${wipe_data}; echo wipe_cache=${wipe_cache};"\
 			"if test ${wipe_data} = failed; then "\
