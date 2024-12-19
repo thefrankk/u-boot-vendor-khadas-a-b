@@ -269,7 +269,6 @@
 		"legacyboot="\
 			"kbi resetflag 0;"\
 			"boot_cooling;"\
-			"cfgload;" \
 			"\0"\
 		"storeboot="\
 			"if load mmc 0:1 1020000 s905_autoscript || load mmc 1:1 1020000 s905_autoscript || load mmc 1:5 1020000 /boot/s905_autoscript; then autoscr 1020000; fi;"\
