@@ -46,11 +46,11 @@ static char* read_cfgload(void)
 	char *p;
 	const char *partition_pairs[][2] = {
 	    //partition		 boot.ini
-	//	{"0:1", 		"/boot.ini"},
-	//	{"0:1",			"/boot/boot.ini"},
-	//	{"1:1", 		"/boot.ini"},
-	//	{"1:1",			"/boot/boot.ini"},
-	//	{"1:5", 		"/boot/boot.ini"}
+		{"0:1", 		"/boot.ini"},
+		{"0:1",			"/boot/boot.ini"},
+		{"1:1", 		"/boot.ini"},
+		{"1:1",			"/boot/boot.ini"},
+		{"1:5", 		"/boot/boot.ini"}
 	};
 	int partition_array_len = sizeof(partition_pairs) / sizeof(partition_pairs[0]);
 	int i = 0;
