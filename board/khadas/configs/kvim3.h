@@ -26,7 +26,7 @@
 
 /* Khadas commands */
 #define CONFIG_KHADAS_KBI 1
-#define CONFIG_KHADAS_CFGLOAD 1
+//#define CONFIG_KHADAS_CFGLOAD 1
 #define CONFIG_KHADAS_SCRIPT 1
 
 #define CONFIG_TCA6408 1
