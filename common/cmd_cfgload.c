@@ -113,7 +113,7 @@ static int do_load_cfgload(cmd_tbl_t *cmdtp, int flag, int argc,
 	char *p;
 	char cmd[64];
 
-	printf("cfgload: start ...\n");
+	printf("cfgload: start  THIS IS A TEST....\n");
 
 	p = read_cfgload();
 	if (NULL == p)
