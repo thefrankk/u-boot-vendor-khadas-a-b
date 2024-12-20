@@ -154,7 +154,7 @@
 
 #define BOOTENV_DEV(devtypeu, devtypel, instance) \
 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
-// #define BOOTENV \
+ #define BOOTENV \
 // 	BOOTENV_SHARED_MMC \
 // 	BOOTENV_SHARED_USB \
 // 	BOOTENV_SHARED_SATA \
@@ -222,4 +222,4 @@
 // 			"run bootcmd_${target}; "                         \
 // 		"done\0"
 
-// #endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
+ #endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
