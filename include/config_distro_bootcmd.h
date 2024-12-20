@@ -154,72 +154,72 @@
 
 #define BOOTENV_DEV(devtypeu, devtypel, instance) \
 	BOOTENV_DEV_##devtypeu(devtypeu, devtypel, instance)
-#define BOOTENV \
-	BOOTENV_SHARED_MMC \
-	BOOTENV_SHARED_USB \
-	BOOTENV_SHARED_SATA \
-	BOOTENV_SHARED_SCSI \
-	BOOTENV_SHARED_IDE \
-	"boot_prefixes=/ /boot/\0" \
-	"boot_scripts=boot.scr boot.scr.uimg\0" \
-	BOOTENV_BOOT_TARGETS \
-	"bootpart=1\0" \
-	\
-	"boot_syslinux_conf=extlinux/extlinuxtest.conf\0" \
-	"boot_extlinux="                                                  \
-		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
-			"${scriptaddr} ${prefix}${boot_syslinux_conf}\0"  \
-	\
-	"scan_dev_for_extlinux="                                          \
-		"if test -e ${devtype} "                                  \
-				"${devnum}:${distro_bootpart} "           \
-				"${prefix}${boot_syslinux_conf}; then "   \
-			"echo Found ${prefix}${boot_syslinux_conf}; "     \
-			"run boot_extlinux; "                             \
-			"echo SCRIPT FAILED: continuing...; "             \
-		"fi\0"                                                    \
-	\
-	"boot_a_script="                                                  \
-		"load ${devtype} ${devnum}:${distro_bootpart} "           \
-			"${scriptaddr} ${prefix}${script}; "              \
-		"source ${scriptaddr}\0"                                  \
-	\
-	"scan_dev_for_scripts="                                           \
-		"for script in ${boot_scripts}; do "                      \
-			"if test -e ${devtype} "                          \
-					"${devnum}:${distro_bootpart} "   \
-					"${prefix}${script}; then "       \
-				"echo Found U-Boot script "               \
-					"${prefix}${script}; "            \
-				"run boot_a_script; "                     \
-				"echo SCRIPT FAILED: continuing...; "     \
-			"fi; "                                            \
-		"done\0"                                                  \
-	\
-	"scan_dev_for_boot="                                              \
-		"echo Scanning ${devtype} "                               \
-				"${devnum}:${distro_bootpart}...; "       \
-		"for prefix in ${boot_prefixes}; do "                     \
-			"run scan_dev_for_scripts; "                      \
-			"run scan_dev_for_extlinux; "                     \
-		"done\0"                                                  \
-	\
-	"scan_dev_for_boot_part="                                         \
-		"part list ${devtype} ${devnum} -bootable devplist; "     \
-		"echo ${devplist}; "  \
-		"for distro_bootpart in ${devplist}; do "                 \
-			"if fstype ${devtype} "                           \
-					"${devnum}:${distro_bootpart} "   \
-					"bootfstype; then "               \
-				"run scan_dev_for_boot; "                 \
-			"fi; "                                            \
-		"done\0"                                                  \
-	\
-	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
-	\
-	"bootcmd=" BOOTENV_SET_USB_NEED_INIT BOOTENV_SET_SCSI_NEED_INIT   \
-		"for target in ${boot_targets}; do "                      \
-			"run bootcmd_${target}; "                         \
-		"done\0"
+// #define BOOTENV \
+// 	BOOTENV_SHARED_MMC \
+// 	BOOTENV_SHARED_USB \
+// 	BOOTENV_SHARED_SATA \
+// 	BOOTENV_SHARED_SCSI \
+// 	BOOTENV_SHARED_IDE \
+// 	"boot_prefixes=/ /boot/\0" \
+// 	"boot_scripts=boot.scr\0" \
+// 	BOOTENV_BOOT_TARGETS \
+// 	"bootpart=1\0" \
+// 	\
+// 	"boot_syslinux_conf=extlinux/extlinuxtest.conf\0" \
+// 	"boot_extlinux="                                                  \
+// 		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
+// 			"${scriptaddr} ${prefix}${boot_syslinux_conf}\0"  \
+// 	\
+// 	"scan_dev_for_extlinux="                                          \
+// 		"if test -e ${devtype} "                                  \
+// 				"${devnum}:${distro_bootpart} "           \
+// 				"${prefix}${boot_syslinux_conf}; then "   \
+// 			"echo Found ${prefix}${boot_syslinux_conf}; "     \
+// 			"run boot_extlinux; "                             \
+// 			"echo SCRIPT FAILED: continuing...; "             \
+// 		"fi\0"                                                    \
+// 	\
+// 	"boot_a_script="                                                  \
+// 		"load ${devtype} ${devnum}:${distro_bootpart} "           \
+// 			"${scriptaddr} ${prefix}${script}; "              \
+// 		"source ${scriptaddr}\0"                                  \
+// 	\
+// 	"scan_dev_for_scripts="                                           \
+// 		"for script in ${boot_scripts}; do "                      \
+// 			"if test -e ${devtype} "                          \
+// 					"${devnum}:${distro_bootpart} "   \
+// 					"${prefix}${script}; then "       \
+// 				"echo Found U-Boot script "               \
+// 					"${prefix}${script}; "            \
+// 				"run boot_a_script; "                     \
+// 				"echo SCRIPT FAILED: continuing...; "     \
+// 			"fi; "                                            \
+// 		"done\0"                                                  \
+// 	\
+// 	"scan_dev_for_boot="                                              \
+// 		"echo Scanning ${devtype} "                               \
+// 				"${devnum}:${distro_bootpart}...; "       \
+// 		"for prefix in ${boot_prefixes}; do "                     \
+// 			"run scan_dev_for_scripts; "                      \
+// 			"run scan_dev_for_extlinux; "                     \
+// 		"done\0"                                                  \
+// 	\
+// 	"scan_dev_for_boot_part="                                         \
+// 		"part list ${devtype} ${devnum} -bootable devplist; "     \
+// 		"echo ${devplist}; "  \
+// 		"for distro_bootpart in ${devplist}; do "                 \
+// 			"if fstype ${devtype} "                           \
+// 					"${devnum}:${distro_bootpart} "   \
+// 					"bootfstype; then "               \
+// 				"run scan_dev_for_boot; "                 \
+// 			"fi; "                                            \
+// 		"done\0"                                                  \
+// 	\
+// 	BOOT_TARGET_DEVICES(BOOTENV_DEV)                                  \
+// 	\
+// 	"bootcmd=" BOOTENV_SET_USB_NEED_INIT BOOTENV_SET_SCSI_NEED_INIT   \
+// 		"for target in ${boot_targets}; do "                      \
+// 			"run bootcmd_${target}; "                         \
+// 		"done\0"
 
-#endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
+// #endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
