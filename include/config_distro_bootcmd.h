@@ -165,7 +165,7 @@
 	BOOTENV_BOOT_TARGETS \
 	"bootpart=1\0" \
 	\
-	"boot_syslinux_conf=extlinux/extlinux.conf\0" \
+	"boot_syslinux_conf=extlinux/extlinuxtest.conf\0" \
 	"boot_extlinux="                                                  \
 		"sysboot ${devtype} ${devnum}:${distro_bootpart} any "    \
 			"${scriptaddr} ${prefix}${boot_syslinux_conf}\0"  \
