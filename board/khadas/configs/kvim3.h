@@ -441,7 +441,6 @@
         "fan_stop=" \
             "i2c mw 0x18 0x88 0" \
             "\0"\
-		// BOOTENV\
 		"pxe_boot=dhcp; pxe get && pxe boot\0"\
 		"bootcmd_spi="\
 			"saradc open 2 && saradc getval && saradc close; "\
