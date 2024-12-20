@@ -161,7 +161,7 @@
 	BOOTENV_SHARED_SCSI \
 	BOOTENV_SHARED_IDE \
 	"boot_prefixes=/ /boot/\0" \
-	"boot_scripts=boot.scr.uimg boot.scr\0" \
+	"boot_scripts=boot.scr boot.scr.uimg\0" \
 	BOOTENV_BOOT_TARGETS \
 	"bootpart=1\0" \
 	\
