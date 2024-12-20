@@ -162,6 +162,8 @@
 	BOOTENV_SHARED_IDE \
 	"boot_prefixes=/ /boot/\0" \
 	"boot_scripts=boot.scr\0" \
+*/
+/*
 	BOOTENV_BOOT_TARGETS \
 	"bootpart=1\0" \
 	\
@@ -221,5 +223,5 @@
 		"for target in ${boot_targets}; do "                      \
 			"run bootcmd_${target}; "                         \ 
 		"done\0" 
-
+*/
 #endif  /* _CONFIG_CMD_DISTRO_BOOTCMD_H */
