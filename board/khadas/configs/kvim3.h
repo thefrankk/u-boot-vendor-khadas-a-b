@@ -558,7 +558,7 @@
 /* storage: emmc/nand/sd */
 #define		CONFIG_STORE_COMPATIBLE 1
 #define 	CONFIG_ENV_OVERWRITE
-#define 	CONFIG_CMD_SAVEENV
+/* #define 	CONFIG_CMD_SAVEENV */
 /* fixme, need fix*/
 
 #if (defined(CONFIG_ENV_IS_IN_AMLNAND) || defined(CONFIG_ENV_IS_IN_MMC)) && defined(CONFIG_STORE_COMPATIBLE)
